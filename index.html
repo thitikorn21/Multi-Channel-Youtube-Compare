@@ -129,7 +129,7 @@
             if (apiKey && apiKey.length > 10) {
                 const prompt = `
 Role: You are an expert YouTube Producer and Digital Marketing Strategist.
-Task: Analyze the provided channel data and generate highly specific, actionable, and deep insights in Thai (ภาษาไทย). The analysis must be generic and applicable to any content type (not limited to Horror/Ghost).
+Task: Analyze the provided channel data and generate highly specific, actionable, and deep insights in Thai (ภาษาไทย). The analysis must be strictly GENERIC and applicable to ANY content type (Education, Vlog, Tech, Gaming, etc.). DO NOT mention ghosts, horror, or fear.
 
 Data:
 - Market Leader Channel: "${winner.name}" (Views: ${winner.totalViews.toLocaleString()}, Engagement Rate: ${winner.engagementRate}%)
@@ -140,18 +140,18 @@ Data:
 Output Requirements (Strictly follow this structure):
 
 1. **Content Structure & Retention (Producer's Eye):**
-   - Analyze why ${realDuration} works for this type of content. Does high/low engagement (${winner.engagementRate}%) imply good storytelling or clickbait?
-   - Suggest a specific "Hook" technique for the first 30 seconds (e.g., Cold Open, Value Proposition, or Emotional Hook).
-   - If engagement is high (>4%), suggest how to nurture the community. If low, suggest pacing improvements.
+   - Analyze why ${realDuration} works for this audience. Does high/low engagement (${winner.engagementRate}%) imply deep connection or broad reach?
+   - Suggest a specific "Hook" technique for the first 30 seconds (e.g., "The Payoff Tease", "In Media Res", or "Question-Led").
+   - If engagement is high (>4%), suggest how to leverage community (e.g., Q&A, Comments reply). If low, suggest pacing improvements (cuts, b-roll).
 
 2. **Audience Behavior Insight (Marketer's Eye):**
-   - Interpret the Golden Hour (${realDay} ${realTime}) deeply. Who is watching? (e.g., "Lunch break workers", "After-school students", "Weekend relaxers").
-   - Suggest a specific pre-launch routine (e.g., Premiere setup, Community post timing).
+   - Interpret the Golden Hour (${realDay} ${realTime}) based on general lifestyle. Who is watching? (e.g., "Commuters", "Lunch breakers", "Weekend binge-watchers").
+   - Suggest a distribution routine (e.g., Shorts remixing, Cross-platform promotion).
 
 3. **Optimization Strategy (Advanced CTR & SEO):**
-   - **Thumbnail Strategy:** Suggest visual composition principles (e.g., "Rule of Thirds", "Color Contrast", "Focal Point") to increase CTR.
-   - **Title Formula:** Create 2 specific example titles using the keywords: "${topKwStr}". Use formulas like [Keyword] + [Benefit/Emotion] + [Curiosity Gap].
-   - **SEO:** Suggest secondary keywords to dominate the niche.
+   - **Visual Strategy (Thumbnail):** Suggest universal design principles. Focus on "Focal Point", "Rule of Thirds", "Color Psychology (Blue/Orange or High Contrast)", and "Text Readability".
+   - **Title Formula:** Create 2 specific example titles using the keywords: "${topKwStr}". Use formulas like [Keyword] + [Benefit/Promise] + [Curiosity/Urgency].
+   - **SEO:** Suggest using long-tail variations of the main keywords.
 
 Tone: Professional, Data-driven, Action-oriented (No fluff).
                 `;
@@ -176,27 +176,27 @@ Tone: Professional, Data-driven, Action-oriented (No fluff).
             // Logic for Producer View
             let producerInsight = "";
             if (engagementScore > 4.0) {
-                producerInsight = `- **Retention Mastery:** Engagement Rate ที่ ${engagementScore}% ถือว่าสูงมาก แสดงว่าโครงสร้างเนื้อหามีความน่าติดตามสูง (High Retention) \n   - **Next Level:** ควรรักษามาตรฐานการเล่าเรื่อง และลองเพิ่ม Call-to-Action (CTA) ในช่วงที่กราฟอารมณ์พีคที่สุดเพื่อดึง Subscribe หรือ Comments`;
+                producerInsight = `- **Community-Driven Content:** Engagement Rate ที่ ${engagementScore}% แสดงว่าคนดูมีความภักดีสูง (Loyal Fanbase) \n   - **Strategy:** เปลี่ยนผู้ชมให้เป็นผู้ร่วมสร้าง (Co-creator) เช่น การทำคลิปตอบคำถาม (Q&A) หรือนำคอมเมนต์ที่น่าสนใจมาเป็นประเด็นหลักในคลิปถัดไป`;
             } else {
-                producerInsight = `- **Pacing Adjustment:** ยอดวิวดีแต่ Engagement ยังไม่พีค แนะนำให้กระชับช่วง Intro ให้สั้นลง และเข้าประเด็นสำคัญหรือจุดไฮไลท์ภายใน 60 วินาทีแรก (The Golden Minute) เพื่อลด Drop-off rate`;
+                producerInsight = `- **Focus on Pacing:** ยอดวิวดีแต่ Engagement ยังไม่พีค อาจเกิดจากเนื้อหาช่วงกลางมีความยืดเยื้อ \n   - **Strategy:** ใช้กฎ "10-Second Rule" คือต้องมีสิ่งน่าสนใจ (ภาพใหม่/ข้อมูลใหม่/มุขตลก) เกิดขึ้นทุกๆ 10 วินาที เพื่อรีเซ็ตความสนใจคนดู`;
             }
 
             // Logic for Marketer View
             let marketerInsight = "";
             const isNight = (bestTime.hour >= 18 || bestTime.hour <= 2);
             if (isNight) {
-                marketerInsight = `- **Prime Time Viewer:** เวลา ${realTime} วัน${realDay} คือช่วงเวลาพักผ่อนหลักของคนส่วนใหญ่ \n   - **Action:** เนื้อหาควรมีความบันเทิง หรือดูแล้วผ่อนคลาย (Lean-back experience) ไม่เครียดจนเกินไป เหมาะกับการดูยาวๆ เพื่อความเพลิดเพลิน`;
+                marketerInsight = `- **Prime Time Viewer:** เวลา ${realTime} วัน${realDay} คือช่วงเวลาพักผ่อนหลักของคนทำงาน/นักเรียน \n   - **Context:** คนดูมีเวลาโฟกัสหน้าจอได้นาน (Lean-back) เหมาะกับคอนเทนต์ที่มีความลึก (In-depth) หรือเล่าเรื่องยาวๆ (Storytelling) โดยไม่ต้องเร่งรีบ`;
             } else {
-                marketerInsight = `- **Daytime Consumption:** เวลา ${realTime} วัน${realDay} บ่งบอกว่าคนดูอาจดูระหว่างพัก หรือทำกิจกรรมอื่นไปด้วย \n   - **Action:** เนื้อหาควรมีความกระชับ (Snackable Content) หรือเน้นเสียงบรรยายที่ชัดเจน เพื่อให้ฟังรู้เรื่องแม้ไม่ได้จ้องจอตลอดเวลา`;
+                marketerInsight = `- **On-the-Go Viewer:** เวลา ${realTime} วัน${realDay} บ่งบอกว่าคนดูอาจดูผ่านมือถือระหว่างเดินทางหรือพักเบรค \n   - **Context:** การตัดต่อต้องกระชับ (Snackable) ตัวหนังสือบนจอต้องใหญ่พอที่จะอ่านรู้เรื่องในจอเล็ก และเสียงพูดต้องชัดเจนเผื่อกรณีไม่ได้ใส่หูฟัง`;
             }
 
             // Logic for Optimization (Specific Examples - GENERIC)
             const keywordsText = topKeywords.length > 0 ? topKeywords.map(k => `"${k.word}"`).join(", ") : "Keyword หลัก";
             const sampleTitle = topKeywords.length > 0 
-                ? `"${topKeywords[0].word}: เคล็ดลับที่คุณอาจไม่เคยรู้ (ต้องดู)"` 
-                : `"เจาะลึกประเด็นร้อน: สิ่งที่คุณต้องรู้ในวันนี้"`;
+                ? `"${topKeywords[0].word}: เทคนิคที่คุณต้องรู้ ถ้าอยาก... (สรุปจบในคลิปเดียว)"` 
+                : `"สรุปประเด็นร้อน: ทุกสิ่งที่คุณควรรู้เกี่ยวกับเรื่องนี้"`;
 
-            return `บทวิเคราะห์เชิงกลยุทธ์ (Smart Simulation - General Content):\n\n1. **Content Structure & Retention (มุมมอง Producer):**\n   ${producerInsight}\n   - ความยาว **"${realDuration}"** เหมาะสมกับพฤติกรรมกลุ่มเป้าหมาย แนะนำให้วางโครงสร้างคลิปแบบ Pyramid (เริ่มด้วยจุดพีค) หรือ Storytelling Arc ตามความเหมาะสมของเนื้อหา\n\n2. **Audience Behavior Insight (มุมมองนักการตลาด):**\n   ${marketerInsight}\n\n3. **Optimization Strategy (CTR & Thumbnail):**\n   - **Visual Strategy:** ใช้หลักการ **"Focal Point"** ที่ชัดเจนบนปกคลิป ใช้สีคู่ตรงข้าม (Complementary Colors) เพื่อดึงดูดสายตา และตัวอักษรขนาดใหญ่ที่อ่านง่ายในมือถือ\n   - **Title Formula:** ใช้สูตร [Keyword] + [ผลลัพธ์/ประโยชน์] + [ความเร่งด่วน/สงสัย]\n   - **ตัวอย่างชื่อคลิป:** ${sampleTitle}\n   - **Keyword Winning:** คำว่า ${keywordsText} เป็นคำที่มี Performance ดี ควรนำมาขยายผลเป็น Series หรือ Playlist`;
+            return `บทวิเคราะห์เชิงกลยุทธ์ (Smart Simulation - General Content):\n\n1. **Content Structure & Retention (มุมมอง Producer):**\n   ${producerInsight}\n   - ความยาว **"${realDuration}"** เป็นระยะที่ Algorithm แนะนำสำหรับ Long-form content แนะนำให้แบ่งเนื้อหาเป็นบท (Chapters) เพื่อให้คนดูเลือกดูจุดที่สนใจได้ง่ายขึ้น\n\n2. **Audience Behavior Insight (มุมมองนักการตลาด):**\n   ${marketerInsight}\n\n3. **Optimization Strategy (CTR & Thumbnail):**\n   - **Visual Strategy:** ใช้หลักการ **"Less is More"** บนปกคลิป \n     1. **Subject:** ใช้ภาพคนหรือวัตถุหลักให้ใหญ่ชัดเจน (กินพื้นที่ 60% ของภาพ) \n     2. **Text:** ใส่ข้อความแค่ 3-4 คำที่อ่านแล้ว "สะดุด" (ไม่ใช่ชื่อคลิปซ้ำ) \n     3. **Contrast:** ใช้สีพื้นหลังที่ตัดกับวัตถุหลักอย่างชัดเจน (เช่น พื้นน้ำเงิน-ตัวหนังสือเหลือง) เพื่อให้เด่นใน Dark Mode\n   - **Title Formula:** ใช้สูตร [Keyword หลัก] + [ผลลัพธ์ที่คนดูอยากได้] + [ความอยากรู้อยากเห็น/ตัวเลข]\n   - **ตัวอย่างชื่อคลิป:** ${sampleTitle}\n   - **Keyword Winning:** คำว่า ${keywordsText} เป็นคำที่มี Traffic ดี ควรนำไปตั้งชื่อ Playlist เพื่อดึงยอดวิวระยะยาว (Evergreen Content)`;
         };
 
         const Card = ({ children, className = "" }) => (
