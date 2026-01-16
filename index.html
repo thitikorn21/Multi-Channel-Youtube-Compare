@@ -10,9 +10,7 @@
     <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
     
     <!-- 2. Load Dependencies for Recharts (CRITICAL FIX) -->
-    <!-- Prop-types is required -->
     <script src="https://unpkg.com/prop-types/prop-types.min.js"></script>
-    <!-- React-is is sometimes needed for element type checking -->
     <script src="https://unpkg.com/react-is/umd/react-is.production.min.js"></script>
     
     <!-- 3. Load Recharts (Pinned to v2.8.0 for best UMD stability) -->
@@ -24,7 +22,10 @@
     <!-- 5. Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- 6. Icon Components -->
+    <!-- 6. Load Plotly.js (For 3D ML Visualization) -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+
+    <!-- 7. Icon Components -->
     <script type="text/babel">
         const IconWrapper = ({ children, className, size = 24, color = "currentColor" }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -43,13 +44,19 @@
         const Plus = (props) => <IconWrapper {...props}><path d="M5 12h14"/><path d="M12 5v14"/></IconWrapper>;
         const X = (props) => <IconWrapper {...props}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></IconWrapper>;
         const BarChart2 = (props) => <IconWrapper {...props}><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></IconWrapper>;
+        const Clock = (props) => <IconWrapper {...props}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></IconWrapper>;
+        const Zap = (props) => <IconWrapper {...props}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></IconWrapper>;
+        const Timer = (props) => <IconWrapper {...props}><path d="M10 2h4"/><path d="M12 14v-4"/><path d="M4 13a8 8 0 0 1 8-7 8 8 0 1 1-8 7"/></IconWrapper>;
+        const Type = (props) => <IconWrapper {...props}><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" x2="15" y1="20" y2="20"/><line x1="12" x2="12" y1="4" y2="20"/></IconWrapper>;
+        const Box = (props) => <IconWrapper {...props}><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" x2="12" y1="22.08" y2="12"/></IconWrapper>;
+        const Info = (props) => <IconWrapper {...props}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></IconWrapper>;
     </script>
 </head>
 <body class="bg-slate-950 text-slate-200">
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useMemo } = React;
+        const { useState, useEffect, useMemo, useRef } = React;
         const { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } = Recharts;
 
         // --- Configuration ---
@@ -57,7 +64,42 @@
           '#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'
         ];
 
-        // --- Utility: CSV Parser ---
+        // --- Utility: Helper Functions ---
+        // 🔥 UPDATE: รองรับทั้ง ISO8601 และ H:MM:SS / MM:SS
+        const parseDuration = (isoDuration) => {
+            if (!isoDuration) return 0;
+            const durationStr = isoDuration.toString().trim();
+
+            // Case 1: ISO 8601 (PT1H2M3S) - Standard YouTube API
+            if (durationStr.startsWith('PT')) {
+                const match = durationStr.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
+                if (!match) return 0;
+                const hours = (parseInt(match[1]) || 0);
+                const minutes = (parseInt(match[2]) || 0);
+                const seconds = (parseInt(match[3]) || 0);
+                return (hours * 60) + minutes + (seconds / 60);
+            }
+
+            // Case 2: Timestamp format (e.g., "0:16:47" or "16:47") - From Google Sheet Export
+            if (durationStr.includes(':')) {
+                const parts = durationStr.split(':').map(Number);
+                let h = 0, m = 0, s = 0;
+                
+                if (parts.length === 3) {
+                    // H:MM:SS
+                    [h, m, s] = parts;
+                } else if (parts.length === 2) {
+                    // MM:SS
+                    [m, s] = parts;
+                }
+                
+                // คำนวณรวมเป็นนาที
+                return (h * 60) + m + (s / 60);
+            }
+
+            return 0;
+        };
+
         const parseCSV = (text) => {
           const lines = text.split('\n').filter(line => line.trim() !== '');
           const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
@@ -89,16 +131,8 @@
                  resolve("กรุณาเลือกช่องอย่างน้อย 1 ช่องเพื่อทำการวิเคราะห์");
                  return;
               }
-              if (channels.length === 1) {
-                 const ch = channels[0];
-                 resolve(`บทวิเคราะห์ช่อง **"${ch.name}"** (Single Channel Analysis):\n\n1. **ประสิทธิภาพปัจจุบัน:** มียอดวิวรวม ${ch.totalViews.toLocaleString()} วิว และค่าเฉลี่ยต่อคลิปอยู่ที่ ${ch.avgViews.toLocaleString()} วิว\n2. **Engagement:** อัตราการมีส่วนร่วมอยู่ที่ ${ch.engagementRate}% \n3. **คำแนะนำ:** ลองเพิ่มช่องคู่แข่งเข้ามาเปรียบเทียบ เพื่อดูว่าประสิทธิภาพนี้ดีกว่าหรือด้อยกว่าค่าเฉลี่ยของตลาด`);
-                 return;
-              }
-              
               const winner = channels.reduce((prev, current) => (prev.totalViews > current.totalViews) ? prev : current);
-              const engagementWinner = channels.reduce((prev, current) => (parseFloat(prev.engagementRate) > parseFloat(current.engagementRate)) ? prev : current);
-              
-              resolve(`บทวิเคราะห์เปรียบเทียบ ${channels.length} ช่อง (Simulation):\n\n1. **ผู้นำตลาด (Market Leader):** ช่อง **"${winner.name}"** โดดเด่นที่สุดในด้านยอดวิวรวม (${winner.totalViews.toLocaleString()} วิว) แสดงถึงความสามารถในการดึงดูดผู้ชมในวงกว้าง (Mass Appeal) ได้ดีที่สุดในกลุ่ม\n\n2. **เจ้าแห่งการมีส่วนร่วม (Engagement King):** ช่อง **"${engagementWinner.name}"** มีอัตรา Engagement Rate สูงที่สุด (${engagementWinner.engagementRate}%) แสดงว่าฐานแฟนคลับมีความจงรักภักดีสูงมาก (High Loyalty) แม้ยอดวิวอาจจะไม่ได้สูงสุดก็ตาม\n\n3. **สรุปภาพรวมการแข่งขัน:**\n   - การแข่งขันในกลุ่มนี้มีความหลากหลาย ช่องที่เน้นปริมาณคลิปอาจได้เปรียบเรื่องการมองเห็น แต่ช่องที่เน้นคุณภาพคลิปจะได้เปรียบเรื่องความยั่งยืน\n   - **คำแนะนำ:** ควรศึกษาแนวทางการทำคอนเทนต์ของ "${winner.name}" ในช่วง 30 วันที่ผ่านมา ว่ามีการปรับเปลี่ยนรูปแบบปกหรือการตั้งชื่อคลิปอย่างไรที่ทำให้ยอดพุ่งสูงขึ้น เพื่อนำมาปรับใช้`);
+              resolve(`บทวิเคราะห์ Quick Win (Simulation):\n\n1. **กลยุทธ์เวลา:** ช่วงเวลาที่คนดูตื่นตัวที่สุดคือวันเสาร์ ช่วง 20:00-22:00 น. แนะนำให้ตั้ง Schedule ลงคลิปในช่วงเวลานี้\n2. **ความยาวคลิป:** คลิปที่มีความยาวประมาณ 20-40 นาที มียอด Engagement สูงสุด ซึ่งเหมาะกับพฤติกรรมคนฟังเรื่องเล่าที่ต้องการความต่อเนื่องแต่ไม่ยาวจนน่าเบื่อ\n3. **การตั้งชื่อ:** คำว่า "หลอน" และ "ตำนาน" เป็น Keyword ทำเงินของช่อง "${winner.name}" ควรนำมาปรับใช้ในหน้าปกและชื่อคลิปถัดไป`);
             }, 2000);
           });
         };
@@ -117,8 +151,228 @@
           </div>
         );
 
+        const HeatmapCell = ({ value, max, day, hour }) => {
+            const intensity = max > 0 ? value / max : 0;
+            const bgColor = value > 0 ? `rgba(239, 68, 68, ${0.2 + (intensity * 0.8)})` : 'rgba(30, 41, 59, 0.5)';
+            return (
+                <div className="group relative w-full pt-[100%] rounded-sm cursor-pointer transition-all hover:ring-2 hover:ring-white z-0 hover:z-10" 
+                     style={{ backgroundColor: bgColor }}
+                     title={`${['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'][day]} ${hour}:00 - ${Math.round(value).toLocaleString()} views`}
+                >
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                         <span className="text-[10px] font-bold text-white drop-shadow-md bg-black/50 px-1 rounded">
+                             {value > 1000 ? (Math.round(value)/1000).toFixed(1)+'k' : Math.round(value)}
+                         </span>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- 3D Chart Component (Plotly) ---
+        const GhostDataverse = ({ data, selectedChannels, colors }) => {
+            const chartRef = useRef(null);
+
+            useEffect(() => {
+                if (!chartRef.current || !data.length || !window.Plotly) return;
+
+                // --- 1. Calculate Max Values for Zones ---
+                let maxDuration = 0;
+                let maxEngagement = 0;
+                let maxViews = 0;
+
+                // Filter data for calculation based on selected channels (or all data if preferred context)
+                const relevantData = data.filter(d => selectedChannels.some(c => d.channel_title?.toLowerCase() === c.toLowerCase()));
+                
+                relevantData.forEach(d => {
+                    if (d.duration > maxDuration) maxDuration = d.duration;
+                    if (d.views > maxViews) maxViews = d.views;
+                    const eng = d.views > 0 ? ((d.likes + d.comments) / d.views) * 100 : 0;
+                    if (eng > maxEngagement) maxEngagement = eng;
+                });
+
+                // Add buffer
+                maxDuration = maxDuration || 60; // Default if 0
+                maxEngagement = maxEngagement || 5;
+                maxViews = maxViews || 10000;
+                
+                const midEng = maxEngagement / 2;
+                const midViews = maxViews / 2;
+                const opacityVal = 0.2; // 80% faded
+
+                // --- 2. Define Zone Traces (Mesh3D) ---
+                
+                // Viral Zone: High Views, High Engagement
+                // Box coordinates: (0, midEng, midViews) to (maxDuration, maxEng, maxViews)
+                const viralZone = {
+                    type: 'mesh3d',
+                    x: [0, 0, maxDuration, maxDuration, 0, 0, maxDuration, maxDuration],
+                    y: [midEng, maxEngagement, maxEngagement, midEng, midEng, maxEngagement, maxEngagement, midEng],
+                    z: [midViews, midViews, midViews, midViews, maxViews, maxViews, maxViews, maxViews],
+                    i: [7, 0, 0, 0, 4, 4, 6, 6, 4, 0, 3, 2], // Manual indices if convex hull fails, but alphahull:0 works for convex
+                    j: [3, 4, 1, 2, 5, 6, 5, 2, 0, 1, 6, 3],
+                    k: [0, 7, 2, 3, 6, 7, 1, 1, 5, 5, 7, 6],
+                    color: '#22c55e', // Green
+                    opacity: opacityVal,
+                    alphahull: 0, 
+                    name: 'Viral Zone (Quality)',
+                    showlegend: true,
+                    hoverinfo: 'name'
+                };
+
+                // Clickbait Zone: High Views, Low Engagement
+                // Box coordinates: (0, 0, midViews) to (maxDuration, midEng, maxViews)
+                const clickbaitZone = {
+                    type: 'mesh3d',
+                    x: [0, 0, maxDuration, maxDuration, 0, 0, maxDuration, maxDuration],
+                    y: [0, midEng, midEng, 0, 0, midEng, midEng, 0],
+                    z: [midViews, midViews, midViews, midViews, maxViews, maxViews, maxViews, maxViews],
+                    color: '#ef4444', // Red
+                    opacity: opacityVal,
+                    alphahull: 0,
+                    name: 'Clickbait Zone',
+                    showlegend: true,
+                    hoverinfo: 'name'
+                };
+
+                // Fanbase Zone: Low Views, High Engagement
+                // Box coordinates: (0, midEng, 0) to (maxDuration, maxEng, midViews)
+                const fanbaseZone = {
+                    type: 'mesh3d',
+                    x: [0, 0, maxDuration, maxDuration, 0, 0, maxDuration, maxDuration],
+                    y: [midEng, maxEngagement, maxEngagement, midEng, midEng, maxEngagement, maxEngagement, midEng],
+                    z: [0, 0, 0, 0, midViews, midViews, midViews, midViews],
+                    color: '#3b82f6', // Blue
+                    opacity: opacityVal,
+                    alphahull: 0,
+                    name: 'Fanbase Zone',
+                    showlegend: true,
+                    hoverinfo: 'name'
+                };
+
+                // --- 3. Create Scatter Traces ---
+                const scatterTraces = selectedChannels.map((chName, index) => {
+                    const chData = data.filter(d => d.channel_title?.toLowerCase() === chName.toLowerCase());
+                    const color = colors[index % colors.length];
+                    
+                    const xValues = chData.map(d => d.duration); 
+                    const zValues = chData.map(d => d.views);    
+                    const yValues = chData.map(d => {             
+                        if(d.views === 0) return 0;
+                        return ((d.likes + d.comments) / d.views) * 100;
+                    });
+                    const markerSizes = chData.map(d => Math.max(5, Math.min(30, Math.sqrt(d.comments) * 2))); 
+
+                    return {
+                        x: xValues,
+                        y: yValues, 
+                        z: zValues,
+                        mode: 'markers',
+                        type: 'scatter3d',
+                        name: chName,
+                        text: chData.map((d, i) => 
+                            `<b>${d.title}</b><br>` +
+                            `⏱ Duration: ${d.duration.toFixed(1)} m<br>` +
+                            `❤️ Engagement: ${yValues[i].toFixed(2)}%<br>` +
+                            `👀 Views: ${d.views.toLocaleString()}<br>` +
+                            `💬 Comments: ${d.comments.toLocaleString()}`
+                        ),
+                        marker: {
+                            size: markerSizes,
+                            color: color,
+                            opacity: 0.9, // Higher opacity for points
+                            line: {
+                                color: 'white',
+                                width: 0.5
+                            }
+                        }
+                    };
+                });
+
+                // Combine traces: Zones first so points appear on top (sometimes order matters for transparency)
+                const allTraces = [...scatterTraces, viralZone, clickbaitZone, fanbaseZone];
+
+                const layout = {
+                    title: { text: '3D Content Matrix: Length vs Engagement vs Reach', font: { color: '#fff' } },
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    plot_bgcolor: 'rgba(0,0,0,0)',
+                    font: { color: '#94a3b8' },
+                    margin: { l: 0, r: 0, b: 0, t: 40 },
+                    scene: {
+                        xaxis: { title: 'Duration (นาที)', color: '#cbd5e1', gridcolor: '#334155' },
+                        yaxis: { title: 'Engagement Rate (%)', color: '#cbd5e1', gridcolor: '#334155' },
+                        zaxis: { title: 'Total Views (Reach)', color: '#cbd5e1', gridcolor: '#334155' },
+                        camera: { eye: { x: 1.6, y: 1.6, z: 1.4 } }
+                    },
+                    legend: { font: { color: '#fff' }, bgcolor: 'rgba(0,0,0,0)' },
+                    hoverlabel: { bgcolor: "#1e293b", font: { color: "#fff" } }
+                };
+
+                const config = { responsive: true, displayModeBar: true };
+                window.Plotly.newPlot(chartRef.current, allTraces, layout, config);
+                return () => { if (chartRef.current) window.Plotly.purge(chartRef.current); };
+            }, [data, selectedChannels, colors]);
+
+            return <div ref={chartRef} className="w-full h-[550px]"></div>;
+        };
+
+        // --- Key Takeaways Component ---
+        const KeyTakeaways = ({ heatmapData, durationStats, days }) => {
+            const bestDay = days[heatmapData.best.day];
+            const bestTime = heatmapData.best.hour;
+            
+            return (
+                <div className="p-6 bg-slate-900/50 border-t border-slate-700/50">
+                    <h4 className="text-white font-bold mb-4 flex items-center gap-2">
+                        <Info size={18} className="text-blue-400" />
+                        Key Takeaways: สรุปประเด็นสำคัญจากข้อมูล
+                    </h4>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Left: How to read 3D */}
+                        <div className="space-y-3">
+                            <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-2">🔍 วิธีอ่านกราฟ 3D (How to Read)</p>
+                            <div className="flex items-start gap-3 text-sm text-slate-300">
+                                <div className="w-2 h-2 rounded-full bg-green-500 mt-1.5 shrink-0 opacity-50"></div>
+                                <div>
+                                    <strong className="text-green-400">Viral Zone (สูง+ลึก):</strong> พื้นที่สีเขียวจางๆ จุดที่อยู่โซนนี้คือ "คนดูเยอะและชอบมาก" (Quality Content)
+                                </div>
+                            </div>
+                            <div className="flex items-start gap-3 text-sm text-slate-300">
+                                <div className="w-2 h-2 rounded-full bg-red-500 mt-1.5 shrink-0 opacity-50"></div>
+                                <div>
+                                    <strong className="text-red-400">Clickbait Zone (สูง+ตื้น):</strong> พื้นที่สีแดงจางๆ จุดที่อยู่โซนนี้คือ "คนกดดูเยอะแต่ Engagement ต่ำ"
+                                </div>
+                            </div>
+                            <div className="flex items-start gap-3 text-sm text-slate-300">
+                                <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 shrink-0 opacity-50"></div>
+                                <div>
+                                    <strong className="text-blue-400">Fanbase Zone (เตี้ย+ลึก):</strong> พื้นที่สีฟ้าจางๆ จุดที่อยู่โซนนี้คือ "คนดูน้อยแต่รักมาก"
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Right: Executive Summary */}
+                        <div className="bg-slate-800/50 p-4 rounded-lg border border-slate-700/50">
+                            <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-3">⚡️ Executive Summary (สรุปผู้บริหาร)</p>
+                            <ul className="space-y-2 text-sm text-slate-200 list-disc list-inside">
+                                <li>
+                                    เวลาทองที่ควรลงคลิปคือ <span className="text-yellow-400 font-bold">วัน{bestDay} เวลา {bestTime}:00 น.</span> เพราะมีสถิติคนดูเฉลี่ยสูงสุด
+                                </li>
+                                <li>
+                                    รูปแบบคลิปที่ทำผลงานได้ดีที่สุดคือ <span className="text-blue-400 font-bold">{durationStats.label}</span>
+                                </li>
+                                <li>
+                                    <span className="text-slate-400">คำแนะนำ:</span> ลองผลิตคอนเทนต์ความยาวระดับนี้ และตั้งเวลาลงตามเวลาทอง เพื่อเพิ่มโอกาสให้คลิปติด Viral มากขึ้น
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
         // --- MAIN APP COMPONENT ---
-        function GhostBattleApp() {
+        function GhostChannelBattleApp() {
           const [data, setData] = useState([]);
           const [loading, setLoading] = useState(true);
           const [error, setError] = useState(null);
@@ -145,6 +399,8 @@
                   views: parseInt(row.views?.replace(/,/g, '') || 0),
                   likes: parseInt(row.likes?.replace(/,/g, '') || 0),
                   comments: parseInt(row.comment_count?.replace(/,/g, '') || 0),
+                  duration: row.duration ? parseDuration(row.duration) : 0, // Parse Duration
+                  title: row.title || '',
                   date: new Date(row.published_at)
                 })).filter(r => r.channel_title);
 
@@ -167,6 +423,7 @@
             fetchData();
           }, []);
 
+          // Stats Logic
           const channelStats = useMemo(() => {
             return selectedChannels.map((chName, index) => {
               const chData = data.filter(d => d.channel_title?.toLowerCase() === chName.toLowerCase());
@@ -189,30 +446,84 @@
             }).sort((a, b) => b.totalViews - a.totalViews);
           }, [data, selectedChannels]);
 
+          // Heatmap Logic
+          const heatmapData = useMemo(() => {
+              const grid = Array(7).fill().map(() => Array(24).fill({ total: 0, count: 0 }));
+              const filteredData = data.filter(d => selectedChannels.some(c => d.channel_title?.toLowerCase() === c.toLowerCase()));
+
+              filteredData.forEach(video => {
+                  if (video.date && !isNaN(video.date)) {
+                      const day = video.date.getDay();
+                      const hour = video.date.getHours();
+                      grid[day][hour] = { total: grid[day][hour].total + video.views, count: grid[day][hour].count + 1 };
+                  }
+              });
+
+              let maxAvg = 0;
+              let bestTime = { day: 0, hour: 0, val: 0 }; // For Quick Win
+
+              const finalGrid = grid.map((dayRow, dIdx) => dayRow.map((cell, hIdx) => {
+                  const avg = cell.count > 0 ? cell.total / cell.count : 0;
+                  if (avg > maxAvg) maxAvg = avg;
+                  if (avg > bestTime.val) bestTime = { day: dIdx, hour: hIdx, val: avg };
+                  return avg;
+              }));
+
+              return { grid: finalGrid, max: maxAvg, best: bestTime };
+          }, [data, selectedChannels]);
+
+          // Duration Logic (Quick Win)
+          const durationStats = useMemo(() => {
+             const filteredData = data.filter(d => selectedChannels.some(c => d.channel_title?.toLowerCase() === c.toLowerCase()));
+             const buckets = { 'สั้น (<10m)': { total: 0, count: 0 }, 'กลาง (10-30m)': { total: 0, count: 0 }, 'ยาว (>30m)': { total: 0, count: 0 } };
+             
+             filteredData.forEach(v => {
+                 if(v.duration < 10) { buckets['สั้น (<10m)'].total += v.views; buckets['สั้น (<10m)'].count++; }
+                 else if(v.duration <= 30) { buckets['กลาง (10-30m)'].total += v.views; buckets['กลาง (10-30m)'].count++; }
+                 else { buckets['ยาว (>30m)'].total += v.views; buckets['ยาว (>30m)'].count++; }
+             });
+
+             let winner = { label: 'N/A', avg: 0 };
+             Object.entries(buckets).forEach(([key, val]) => {
+                 const avg = val.count > 0 ? val.total / val.count : 0;
+                 if(avg > winner.avg) winner = { label: key, avg };
+             });
+             return winner;
+          }, [data, selectedChannels]);
+
+          // Keyword Logic (Quick Win)
+          const keywordStats = useMemo(() => {
+             const filteredData = data.filter(d => selectedChannels.some(c => d.channel_title?.toLowerCase() === c.toLowerCase()));
+             const wordMap = {};
+             
+             filteredData.forEach(v => {
+                 if(!v.title) return;
+                 // Simple splitting by spaces (Thai might need specific library but this works for basic keywords)
+                 const words = v.title.replace(/[|()\[\]]/g, '').split(/\s+/);
+                 words.forEach(w => {
+                     if(w.length > 2 && !['EP.', 'The', 'Ghost'].includes(w)) { // Basic Filter
+                        if(!wordMap[w]) wordMap[w] = { total: 0, count: 0 };
+                        wordMap[w].total += v.views;
+                        wordMap[w].count++;
+                     }
+                 });
+             });
+
+             // Sort by Avg Views, filter for min occurrence > 2
+             const sorted = Object.entries(wordMap)
+                .map(([word, stat]) => ({ word, avg: stat.total/stat.count, count: stat.count }))
+                .filter(x => x.count >= 2)
+                .sort((a,b) => b.avg - a.avg)
+                .slice(0, 3); // Top 3
+
+             return sorted;
+          }, [data, selectedChannels]);
+
           const channelList = useMemo(() => [...new Set(data.map(d => d.channel_title))].filter(Boolean), [data]);
 
-          const addChannel = () => {
-            if (tempSelected && !selectedChannels.includes(tempSelected)) {
-              setSelectedChannels([...selectedChannels, tempSelected]);
-              setAiAnalysis(null);
-            }
-          };
-
-          const removeChannel = (channel) => {
-            if (selectedChannels.length > 1) {
-              setSelectedChannels(selectedChannels.filter(c => c !== channel));
-              setAiAnalysis(null);
-            } else {
-              alert("ต้องเหลืออย่างน้อย 1 ช่องเพื่อแสดงผลครับ");
-            }
-          };
-
-          const handleAIAnalyze = async () => {
-            setAiLoading(true);
-            const result = await mockAnalyze(channelStats, aiKey);
-            setAiAnalysis(result);
-            setAiLoading(false);
-          };
+          const addChannel = () => { if (tempSelected && !selectedChannels.includes(tempSelected)) setSelectedChannels([...selectedChannels, tempSelected]); };
+          const removeChannel = (channel) => { if (selectedChannels.length > 1) setSelectedChannels(selectedChannels.filter(c => c !== channel)); else alert("ต้องเหลืออย่างน้อย 1 ช่องเพื่อแสดงผลครับ"); };
+          const handleAIAnalyze = async () => { setAiLoading(true); const result = await mockAnalyze(channelStats, aiKey); setAiAnalysis(result); setAiLoading(false); };
 
           if (loading) return (
             <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white">
@@ -221,6 +532,8 @@
               </div>
             </div>
           );
+
+          const days = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
 
           return (
             <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-red-500/30 pb-20">
@@ -238,22 +551,12 @@
                     </div>
                     
                     <div className="flex items-center gap-2 bg-slate-800 p-1.5 rounded-lg border border-slate-700 shadow-inner">
-                       <select 
-                         className="bg-transparent text-slate-200 font-bold outline-none px-2 py-1 cursor-pointer hover:bg-slate-700 rounded text-sm w-40 md:w-56"
-                         value={tempSelected} onChange={e => setTempSelected(e.target.value)}
-                       >
+                       <select className="bg-transparent text-slate-200 font-bold outline-none px-2 py-1 cursor-pointer hover:bg-slate-700 rounded text-sm w-40 md:w-56" value={tempSelected} onChange={e => setTempSelected(e.target.value)}>
                          {channelList.map(c => <option key={c} value={c} className="bg-slate-800 text-white">{c}</option>)}
                        </select>
-                       <button 
-                        onClick={addChannel}
-                        className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded transition-colors flex items-center gap-1 text-sm font-bold"
-                        title="Add Channel"
-                       >
-                         <Plus size={16} /> เพิ่มช่อง
-                       </button>
+                       <button onClick={addChannel} className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded transition-colors flex items-center gap-1 text-sm font-bold"><Plus size={16} /> เพิ่มช่อง</button>
                     </div>
                   </div>
-
                   <div className="flex flex-wrap gap-2">
                     {selectedChannels.map((ch, idx) => {
                       const color = COLORS[idx % COLORS.length];
@@ -261,9 +564,7 @@
                         <div key={ch} className="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-sm shadow-sm transition-all hover:border-slate-500 animate-in fade-in slide-in-from-top-1 duration-300">
                           <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }}></div>
                           <span className="font-bold text-slate-200">{ch}</span>
-                          <button onClick={() => removeChannel(ch)} className="text-slate-500 hover:text-red-400 ml-1">
-                            <X size={14} />
-                          </button>
+                          <button onClick={() => removeChannel(ch)} className="text-slate-500 hover:text-red-400 ml-1"><X size={14} /></button>
                         </div>
                       );
                     })}
@@ -272,25 +573,22 @@
               </div>
 
               <main className="max-w-7xl mx-auto px-4 py-8 space-y-8">
+                {/* Stats Cards */}
                 <div className={`grid grid-cols-1 md:grid-cols-2 ${selectedChannels.length >= 3 ? 'lg:grid-cols-3 xl:grid-cols-4' : ''} gap-6`}>
                   {channelStats.map((stat, idx) => (
                      <Card key={stat.name} className="relative border-t-4 transition-transform hover:-translate-y-1" style={{ borderTopColor: stat.color }}>
                         {idx === 0 && channelStats.length > 1 && (
-                           <div className="absolute top-0 right-0 p-2 bg-yellow-500/20 text-yellow-400 rounded-bl-xl border-l border-b border-yellow-500/20 z-10">
-                             <Trophy size={16} />
-                           </div>
+                           <div className="absolute top-0 right-0 p-2 bg-yellow-500/20 text-yellow-400 rounded-bl-xl border-l border-b border-yellow-500/20 z-10"><Trophy size={16} /></div>
                         )}
                         <div className="p-5">
                           <div className="flex items-center gap-3 mb-4">
-                            <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg text-white shadow-lg shrink-0" style={{ backgroundColor: stat.color }}>
-                              {stat.name.charAt(0)}
-                            </div>
+                            <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg text-white shadow-lg shrink-0" style={{ backgroundColor: stat.color }}>{stat.name.charAt(0)}</div>
                             <h2 className="text-lg font-bold text-white truncate w-full" title={stat.name}>{stat.name}</h2>
                           </div>
                           <div className="space-y-4">
                             <StatBox label="ยอดวิวรวม (Total Views)" value={stat.totalViews.toLocaleString()} color="text-white" />
                             <div className="grid grid-cols-2 gap-2">
-                               <StatBox label="วิวเฉลี่ย/คลิป" value={stat.avgViews.toLocaleString()} color="text-slate-300" />
+                               <StatBox label="วิวเฉลี่ย/คลิป" value={Math.round(stat.avgViews).toLocaleString()} color="text-slate-300" />
                                <StatBox label="จำนวนคลิป" value={stat.count} color="text-slate-300" align="right" />
                             </div>
                             <div className="pt-3 border-t border-slate-700/50 flex justify-between items-center">
@@ -303,6 +601,7 @@
                   ))}
                 </div>
 
+                {/* Charts Section (Restored) */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                    <Card className="p-6 lg:col-span-2 h-[450px]">
                      <h3 className="text-lg font-bold text-slate-300 mb-6 flex items-center gap-2">
@@ -357,7 +656,129 @@
                    </Card>
                 </div>
 
-                <Card className="p-0 border-yellow-500/30">
+                {/* Heatmap Section */}
+                <Card className="p-6 overflow-x-auto">
+                    <h3 className="text-lg font-bold text-slate-300 mb-6 flex items-center gap-2">
+                        <Clock size={20} className="text-red-400" />
+                        Golden Hour Analysis: Heatmap
+                        <span className="text-xs font-normal text-slate-500 ml-2">(ความร้อนแรงของยอดวิวตามเวลา)</span>
+                    </h3>
+                    <div className="min-w-[800px]">
+                        <div className="flex mb-1">
+                            <div className="w-16 shrink-0"></div>
+                            {Array(24).fill(0).map((_, i) => <div key={i} className="flex-1 text-center text-[10px] text-slate-500">{i}</div>)}
+                        </div>
+                        {heatmapData.grid.map((dayRow, dayIndex) => (
+                            <div key={dayIndex} className="flex mb-1 h-8">
+                                <div className="w-16 shrink-0 flex items-center justify-end pr-3 text-xs text-slate-400 font-bold">{days[dayIndex]}</div>
+                                {dayRow.map((avgViews, hourIndex) => <div key={hourIndex} className="flex-1 px-[1px]"><HeatmapCell value={avgViews} max={heatmapData.max} day={dayIndex} hour={hourIndex} /></div>)}
+                            </div>
+                        ))}
+                    </div>
+                </Card>
+
+                {/* 🚀 STRATEGY ROOM (QUICK WINS) */}
+                <div className="space-y-4">
+                    <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 flex items-center gap-2">
+                        <Zap className="text-yellow-400" /> Strategy Room: กลยุทธ์ Quick Win
+                    </h2>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {/* 1. Best Time Card */}
+                        <Card className="p-6 border-l-4 border-l-yellow-500 bg-gradient-to-br from-slate-800 to-slate-900">
+                             <div className="flex justify-between items-start mb-4">
+                                 <div>
+                                    <h3 className="text-slate-400 text-xs font-bold uppercase tracking-wider">Golden Time (เวลาทอง)</h3>
+                                    <p className="text-xs text-slate-500">ลงคลิปเวลานี้ ยอดวิวเฉลี่ยสูงสุด</p>
+                                 </div>
+                                 <Clock className="text-yellow-500 opacity-80" />
+                             </div>
+                             {heatmapData.best.val > 0 ? (
+                                <div className="mt-2">
+                                    <div className="text-3xl font-bold text-white mb-1">
+                                        วัน{days[heatmapData.best.day]} <span className="text-yellow-400">{heatmapData.best.hour}:00</span> น.
+                                    </div>
+                                    <div className="text-xs text-green-400 bg-green-900/30 inline-block px-2 py-1 rounded">
+                                        Avg: {Math.round(heatmapData.best.val).toLocaleString()} views
+                                    </div>
+                                </div>
+                             ) : (
+                                <p className="text-slate-500 italic mt-4">ไม่มีข้อมูลเพียงพอ</p>
+                             )}
+                        </Card>
+
+                        {/* 2. Best Duration Card */}
+                        <Card className="p-6 border-l-4 border-l-blue-500 bg-gradient-to-br from-slate-800 to-slate-900">
+                             <div className="flex justify-between items-start mb-4">
+                                 <div>
+                                    <h3 className="text-slate-400 text-xs font-bold uppercase tracking-wider">Winning Duration (ความยาว)</h3>
+                                    <p className="text-xs text-slate-500">ความยาวคลิปที่คนชอบดูที่สุด</p>
+                                 </div>
+                                 <Timer className="text-blue-500 opacity-80" />
+                             </div>
+                             {durationStats.avg > 0 ? (
+                                <div className="mt-2">
+                                    <div className="text-3xl font-bold text-white mb-1">
+                                        {durationStats.label}
+                                    </div>
+                                    <div className="text-xs text-blue-300 bg-blue-900/30 inline-block px-2 py-1 rounded">
+                                        ชนะเลิศด้วย Avg: {Math.round(durationStats.avg).toLocaleString()} views
+                                    </div>
+                                </div>
+                             ) : (
+                                <p className="text-slate-500 italic mt-4">ไม่มีข้อมูล Duration</p>
+                             )}
+                        </Card>
+
+                        {/* 3. Top Keywords Card */}
+                        <Card className="p-6 border-l-4 border-l-purple-500 bg-gradient-to-br from-slate-800 to-slate-900">
+                             <div className="flex justify-between items-start mb-4">
+                                 <div>
+                                    <h3 className="text-slate-400 text-xs font-bold uppercase tracking-wider">Magic Keywords (คำศักดิ์สิทธิ์)</h3>
+                                    <p className="text-xs text-slate-500">คำในชื่อคลิปที่เจอบ่อยในคลิปปังๆ</p>
+                                 </div>
+                                 <Type className="text-purple-500 opacity-80" />
+                             </div>
+                             <div className="mt-2 space-y-2">
+                                {keywordStats.length > 0 ? (
+                                    keywordStats.map((k, i) => (
+                                        <div key={i} className="flex justify-between items-center border-b border-slate-700/50 pb-1 last:border-0">
+                                            <span className="font-bold text-white text-lg">"{k.word}"</span>
+                                            <span className="text-xs text-slate-400">{Math.round(k.avg).toLocaleString()} views</span>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p className="text-slate-500 italic">ไม่มีข้อมูล Keywords</p>
+                                )}
+                             </div>
+                        </Card>
+                    </div>
+                </div>
+
+                {/* 3D Dataverse Section */}
+                <Card className="p-0 border-blue-500/30 mt-8 overflow-hidden relative">
+                    <div className="absolute top-0 left-0 w-full h-full bg-slate-900 z-0"></div>
+                    <div className="relative z-10 p-4 border-b border-slate-700/50 bg-slate-800/80 backdrop-blur-sm flex justify-between items-center">
+                        <div>
+                            <h3 className="text-lg font-bold text-blue-300 flex items-center gap-2">
+                                <Box size={20} className="text-blue-400" />
+                                Content Impact Matrix (3D)
+                            </h3>
+                            <p className="text-xs text-slate-400">แบบจำลอง 4 มิติ: ความยาว (X) vs Engagement Rate (Y) vs ยอดวิว (Z) vs คอมเมนต์ (ขนาด)</p>
+                        </div>
+                    </div>
+                    <div className="relative z-10 bg-slate-900/50 min-h-[500px]">
+                        <GhostDataverse data={data} selectedChannels={selectedChannels} colors={COLORS} />
+                    </div>
+                    
+                    {/* Key Takeaways & Guide (Added inside the 3D card for context) */}
+                    <div className="relative z-10">
+                        <KeyTakeaways heatmapData={heatmapData} durationStats={durationStats} days={days} />
+                    </div>
+                </Card>
+
+                {/* AI Analyst Section */}
+                <Card className="p-0 border-yellow-500/30 mt-8">
                    <div className="bg-gradient-to-r from-yellow-900/20 to-slate-900 p-4 border-b border-slate-800 flex justify-between items-center">
                       <div className="flex items-center gap-2">
                          <Brain className="text-yellow-400" />
@@ -365,44 +786,18 @@
                       </div>
                       {!aiAnalysis && (
                         <div className="flex gap-2">
-                           <input 
-                             type="password" 
-                             placeholder="ใส่ Gemini API Key (ถ้ามี)" 
-                             className="bg-slate-950 border border-slate-700 rounded px-3 py-1 text-sm text-slate-300 focus:outline-none focus:border-yellow-500 w-40 md:w-auto"
-                             value={aiKey}
-                             onChange={e => setAiKey(e.target.value)}
-                           />
-                           <button 
-                             onClick={handleAIAnalyze}
-                             disabled={aiLoading}
-                             className="bg-yellow-600 hover:bg-yellow-500 text-white px-4 py-1 rounded text-sm font-bold transition-colors disabled:opacity-50 flex items-center gap-2"
-                           >
-                             {aiLoading ? <RefreshCw className="animate-spin" size={14}/> : 'วิเคราะห์ข้อมูล'}
-                           </button>
+                           <input type="password" placeholder="ใส่ Gemini API Key (ถ้ามี)" className="bg-slate-950 border border-slate-700 rounded px-3 py-1 text-sm text-slate-300 focus:outline-none focus:border-yellow-500 w-40 md:w-auto" value={aiKey} onChange={e => setAiKey(e.target.value)} />
+                           <button onClick={handleAIAnalyze} disabled={aiLoading} className="bg-yellow-600 hover:bg-yellow-500 text-white px-4 py-1 rounded text-sm font-bold transition-colors disabled:opacity-50 flex items-center gap-2">{aiLoading ? <RefreshCw className="animate-spin" size={14}/> : 'วิเคราะห์ข้อมูล'}</button>
                         </div>
                       )}
                    </div>
-                   
                    <div className="p-6 bg-slate-900/50 min-h-[150px]">
                       {aiLoading ? (
-                        <div className="space-y-3 animate-pulse">
-                          <div className="h-4 bg-slate-800 rounded w-3/4"></div>
-                          <div className="h-4 bg-slate-800 rounded w-1/2"></div>
-                        </div>
+                        <div className="space-y-3 animate-pulse"><div className="h-4 bg-slate-800 rounded w-3/4"></div><div className="h-4 bg-slate-800 rounded w-1/2"></div></div>
                       ) : aiAnalysis ? (
-                        <div className="prose prose-invert max-w-none">
-                          <pre className="whitespace-pre-wrap font-sans text-slate-300 text-sm leading-relaxed">
-                            {aiAnalysis}
-                          </pre>
-                          <button onClick={() => setAiAnalysis(null)} className="mt-4 text-xs text-slate-500 underline hover:text-slate-300">
-                            ล้างผลการวิเคราะห์
-                          </button>
-                        </div>
+                        <div className="prose prose-invert max-w-none"><pre className="whitespace-pre-wrap font-sans text-slate-300 text-sm leading-relaxed">{aiAnalysis}</pre><button onClick={() => setAiAnalysis(null)} className="mt-4 text-xs text-slate-500 underline hover:text-slate-300">ล้างผลการวิเคราะห์</button></div>
                       ) : (
-                        <div className="flex flex-col items-center justify-center text-slate-500 h-full py-8">
-                           <Brain size={48} className="mb-2 opacity-20" />
-                           <p className="text-sm">ใส่ API Key และกดปุ่มวิเคราะห์ เพื่อให้ AI สรุปข้อมูลเชิงลึกของ {selectedChannels.length} ช่องนี้</p>
-                        </div>
+                        <div className="flex flex-col items-center justify-center text-slate-500 h-full py-8"><Brain size={48} className="mb-2 opacity-20" /><p className="text-sm">ใส่ API Key และกดปุ่มวิเคราะห์ เพื่อให้ AI สรุปข้อมูลเชิงลึกของ {selectedChannels.length} ช่องนี้</p></div>
                       )}
                    </div>
                 </Card>
@@ -413,7 +808,7 @@
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<GhostBattleApp />);
+        root.render(<GhostChannelBattleApp />);
     </script>
 </body>
 </html>
