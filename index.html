@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ghost Channel Battle</title>
+    
+    <!-- 1. Load React & ReactDOM (Stable) -->
+    <script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+    
+    <!-- 2. Load Dependencies for Recharts (CRITICAL FIX) -->
+    <!-- Prop-types is required -->
+    <script src="https://unpkg.com/prop-types/prop-types.min.js"></script>
+    <!-- React-is is sometimes needed for element type checking -->
+    <script src="https://unpkg.com/react-is/umd/react-is.production.min.js"></script>
+    
+    <!-- 3. Load Recharts (Pinned to v2.8.0 for best UMD stability) -->
+    <script src="https://unpkg.com/recharts@2.8.0/umd/Recharts.js"></script>
+
+    <!-- 4. Load Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- 5. Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- 6. Icon Components -->
+    <script type="text/babel">
+        const IconWrapper = ({ children, className, size = 24, color = "currentColor" }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                {children}
+            </svg>
+        );
+
+        const Trophy = (props) => <IconWrapper {...props}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></IconWrapper>;
+        const TrendingUp = (props) => <IconWrapper {...props}><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></IconWrapper>;
+        const Users = (props) => <IconWrapper {...props}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></IconWrapper>;
+        const Youtube = (props) => <IconWrapper {...props}><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/></IconWrapper>;
+        const Activity = (props) => <IconWrapper {...props}><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></IconWrapper>;
+        const Swords = (props) => <IconWrapper {...props}><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" x2="19" y1="19" y2="13"/><line x1="16" x2="20" y1="16" y2="20"/><line x1="19" x2="21" y1="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" x2="9" y1="14" y2="18"/><line x1="7" x2="4" y1="17" y2="20"/><line x1="3" x2="5" y1="19" y2="21"/></IconWrapper>;
+        const Brain = (props) => <IconWrapper {...props}><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/></IconWrapper>;
+        const RefreshCw = (props) => <IconWrapper {...props}><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></IconWrapper>;
+        const Plus = (props) => <IconWrapper {...props}><path d="M5 12h14"/><path d="M12 5v14"/></IconWrapper>;
+        const X = (props) => <IconWrapper {...props}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></IconWrapper>;
+        const BarChart2 = (props) => <IconWrapper {...props}><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></IconWrapper>;
+    </script>
+</head>
+<body class="bg-slate-950 text-slate-200">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+        const { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } = Recharts;
+
+        // --- Configuration ---
+        const COLORS = [
+          '#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'
+        ];
+
+        // --- Utility: CSV Parser ---
+        const parseCSV = (text) => {
+          const lines = text.split('\n').filter(line => line.trim() !== '');
+          const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+          
+          return lines.slice(1).map(line => {
+            const values = [];
+            let currentVal = '';
+            let inQuote = false;
+            for (let i = 0; i < line.length; i++) {
+              if (line[i] === '"') { inQuote = !inQuote; continue; }
+              if (line[i] === ',' && !inQuote) { values.push(currentVal); currentVal = ''; }
+              else { currentVal += line[i]; }
+            }
+            values.push(currentVal);
+
+            const row = {};
+            headers.forEach((header, index) => {
+              row[header] = values[index]?.trim().replace(/"/g, '');
+            });
+            return row;
+          });
+        };
+
+        // --- Mock AI Analysis Function ---
+        const mockAnalyze = async (channels, apiKey) => {
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              if (channels.length === 0) {
+                 resolve("กรุณาเลือกช่องอย่างน้อย 1 ช่องเพื่อทำการวิเคราะห์");
+                 return;
+              }
+              if (channels.length === 1) {
+                 const ch = channels[0];
+                 resolve(`บทวิเคราะห์ช่อง **"${ch.name}"** (Single Channel Analysis):\n\n1. **ประสิทธิภาพปัจจุบัน:** มียอดวิวรวม ${ch.totalViews.toLocaleString()} วิว และค่าเฉลี่ยต่อคลิปอยู่ที่ ${ch.avgViews.toLocaleString()} วิว\n2. **Engagement:** อัตราการมีส่วนร่วมอยู่ที่ ${ch.engagementRate}% \n3. **คำแนะนำ:** ลองเพิ่มช่องคู่แข่งเข้ามาเปรียบเทียบ เพื่อดูว่าประสิทธิภาพนี้ดีกว่าหรือด้อยกว่าค่าเฉลี่ยของตลาด`);
+                 return;
+              }
+              
+              const winner = channels.reduce((prev, current) => (prev.totalViews > current.totalViews) ? prev : current);
+              const engagementWinner = channels.reduce((prev, current) => (parseFloat(prev.engagementRate) > parseFloat(current.engagementRate)) ? prev : current);
+              
+              resolve(`บทวิเคราะห์เปรียบเทียบ ${channels.length} ช่อง (Simulation):\n\n1. **ผู้นำตลาด (Market Leader):** ช่อง **"${winner.name}"** โดดเด่นที่สุดในด้านยอดวิวรวม (${winner.totalViews.toLocaleString()} วิว) แสดงถึงความสามารถในการดึงดูดผู้ชมในวงกว้าง (Mass Appeal) ได้ดีที่สุดในกลุ่ม\n\n2. **เจ้าแห่งการมีส่วนร่วม (Engagement King):** ช่อง **"${engagementWinner.name}"** มีอัตรา Engagement Rate สูงที่สุด (${engagementWinner.engagementRate}%) แสดงว่าฐานแฟนคลับมีความจงรักภักดีสูงมาก (High Loyalty) แม้ยอดวิวอาจจะไม่ได้สูงสุดก็ตาม\n\n3. **สรุปภาพรวมการแข่งขัน:**\n   - การแข่งขันในกลุ่มนี้มีความหลากหลาย ช่องที่เน้นปริมาณคลิปอาจได้เปรียบเรื่องการมองเห็น แต่ช่องที่เน้นคุณภาพคลิปจะได้เปรียบเรื่องความยั่งยืน\n   - **คำแนะนำ:** ควรศึกษาแนวทางการทำคอนเทนต์ของ "${winner.name}" ในช่วง 30 วันที่ผ่านมา ว่ามีการปรับเปลี่ยนรูปแบบปกหรือการตั้งชื่อคลิปอย่างไรที่ทำให้ยอดพุ่งสูงขึ้น เพื่อนำมาปรับใช้`);
+            }, 2000);
+          });
+        };
+
+        const Card = ({ children, className = "" }) => (
+          <div className={`bg-slate-800 rounded-xl border border-slate-700 shadow-xl overflow-hidden ${className}`}>
+            {children}
+          </div>
+        );
+
+        const StatBox = ({ label, value, subtext, color = "text-white", align = "left" }) => (
+          <div className={`flex flex-col ${align === 'right' ? 'items-end text-right' : (align === 'center' ? 'items-center text-center' : 'items-start text-left')}`}>
+            <span className="text-slate-400 text-xs uppercase tracking-wider font-semibold mb-1">{label}</span>
+            <span className={`text-xl md:text-2xl font-bold font-mono ${color}`}>{value}</span>
+            {subtext && <span className="text-slate-500 text-[10px] mt-1">{subtext}</span>}
+          </div>
+        );
+
+        // --- MAIN APP COMPONENT ---
+        function GhostBattleApp() {
+          const [data, setData] = useState([]);
+          const [loading, setLoading] = useState(true);
+          const [error, setError] = useState(null);
+          
+          const [selectedChannels, setSelectedChannels] = useState([]);
+          const [tempSelected, setTempSelected] = useState('');
+          
+          const [aiKey, setAiKey] = useState('');
+          const [aiAnalysis, setAiAnalysis] = useState(null);
+          const [aiLoading, setAiLoading] = useState(false);
+
+          useEffect(() => {
+            const fetchData = async () => {
+              try {
+                const SHEET_ID = '1Lz6gNRhtu0R_PRYZqA61DCsXNFmgsJStO-k1KgnOKds';
+                const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
+                
+                const response = await fetch(CSV_URL);
+                const text = await response.text();
+                const parsedData = parseCSV(text);
+                
+                const cleanedData = parsedData.map(row => ({
+                  ...row,
+                  views: parseInt(row.views?.replace(/,/g, '') || 0),
+                  likes: parseInt(row.likes?.replace(/,/g, '') || 0),
+                  comments: parseInt(row.comment_count?.replace(/,/g, '') || 0),
+                  date: new Date(row.published_at)
+                })).filter(r => r.channel_title);
+
+                setData(cleanedData);
+                setLoading(false);
+                
+                if (cleanedData.length > 0) {
+                   const uniqueChannels = [...new Set(cleanedData.map(d => d.channel_title))].filter(Boolean);
+                   if (uniqueChannels.length > 0) {
+                     setTempSelected(uniqueChannels[0]);
+                     setSelectedChannels([uniqueChannels[0]]);
+                   }
+                }
+              } catch (err) {
+                console.error("Error fetching data:", err);
+                setError("ไม่สามารถดึงข้อมูลจาก Google Sheet ได้");
+                setLoading(false);
+              }
+            };
+            fetchData();
+          }, []);
+
+          const channelStats = useMemo(() => {
+            return selectedChannels.map((chName, index) => {
+              const chData = data.filter(d => d.channel_title?.toLowerCase() === chName.toLowerCase());
+              if (!chData.length) return { 
+                 name: chName, totalViews: 0, totalLikes: 0, avgViews: 0, count: 0, engagementRate: 0, color: COLORS[index % COLORS.length] 
+              };
+
+              const totalViews = chData.reduce((sum, r) => sum + r.views, 0);
+              const totalLikes = chData.reduce((sum, r) => sum + r.likes, 0);
+              
+              return {
+                name: chData[0]?.channel_title || chName,
+                totalViews,
+                totalLikes,
+                avgViews: Math.round(totalViews / chData.length),
+                count: chData.length,
+                engagementRate: totalViews > 0 ? ((totalLikes / totalViews) * 100).toFixed(2) : 0,
+                color: COLORS[index % COLORS.length]
+              };
+            }).sort((a, b) => b.totalViews - a.totalViews);
+          }, [data, selectedChannels]);
+
+          const channelList = useMemo(() => [...new Set(data.map(d => d.channel_title))].filter(Boolean), [data]);
+
+          const addChannel = () => {
+            if (tempSelected && !selectedChannels.includes(tempSelected)) {
+              setSelectedChannels([...selectedChannels, tempSelected]);
+              setAiAnalysis(null);
+            }
+          };
+
+          const removeChannel = (channel) => {
+            if (selectedChannels.length > 1) {
+              setSelectedChannels(selectedChannels.filter(c => c !== channel));
+              setAiAnalysis(null);
+            } else {
+              alert("ต้องเหลืออย่างน้อย 1 ช่องเพื่อแสดงผลครับ");
+            }
+          };
+
+          const handleAIAnalyze = async () => {
+            setAiLoading(true);
+            const result = await mockAnalyze(channelStats, aiKey);
+            setAiAnalysis(result);
+            setAiLoading(false);
+          };
+
+          if (loading) return (
+            <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white">
+              <div className="flex flex-col items-center animate-pulse">
+                <p className="text-xl">กำลังโหลดข้อมูล...</p>
+              </div>
+            </div>
+          );
+
+          return (
+            <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-red-500/30 pb-20">
+              <div className="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 shadow-lg">
+                <div className="max-w-7xl mx-auto px-4 py-4 space-y-4">
+                  <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-gradient-to-br from-red-600 to-purple-700 p-2 rounded-lg shadow-lg">
+                        <Swords className="text-white w-6 h-6" />
+                      </div>
+                      <div>
+                        <h1 className="text-xl font-bold text-white tracking-tight uppercase">Multi-Channel Youtube Compare</h1>
+                        <p className="text-xs text-slate-400">ระบบเปรียบเทียบสถิติ Youtube แบบหลายช่อง</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 bg-slate-800 p-1.5 rounded-lg border border-slate-700 shadow-inner">
+                       <select 
+                         className="bg-transparent text-slate-200 font-bold outline-none px-2 py-1 cursor-pointer hover:bg-slate-700 rounded text-sm w-40 md:w-56"
+                         value={tempSelected} onChange={e => setTempSelected(e.target.value)}
+                       >
+                         {channelList.map(c => <option key={c} value={c} className="bg-slate-800 text-white">{c}</option>)}
+                       </select>
+                       <button 
+                        onClick={addChannel}
+                        className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded transition-colors flex items-center gap-1 text-sm font-bold"
+                        title="Add Channel"
+                       >
+                         <Plus size={16} /> เพิ่มช่อง
+                       </button>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {selectedChannels.map((ch, idx) => {
+                      const color = COLORS[idx % COLORS.length];
+                      return (
+                        <div key={ch} className="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-sm shadow-sm transition-all hover:border-slate-500 animate-in fade-in slide-in-from-top-1 duration-300">
+                          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }}></div>
+                          <span className="font-bold text-slate-200">{ch}</span>
+                          <button onClick={() => removeChannel(ch)} className="text-slate-500 hover:text-red-400 ml-1">
+                            <X size={14} />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              <main className="max-w-7xl mx-auto px-4 py-8 space-y-8">
+                <div className={`grid grid-cols-1 md:grid-cols-2 ${selectedChannels.length >= 3 ? 'lg:grid-cols-3 xl:grid-cols-4' : ''} gap-6`}>
+                  {channelStats.map((stat, idx) => (
+                     <Card key={stat.name} className="relative border-t-4 transition-transform hover:-translate-y-1" style={{ borderTopColor: stat.color }}>
+                        {idx === 0 && channelStats.length > 1 && (
+                           <div className="absolute top-0 right-0 p-2 bg-yellow-500/20 text-yellow-400 rounded-bl-xl border-l border-b border-yellow-500/20 z-10">
+                             <Trophy size={16} />
+                           </div>
+                        )}
+                        <div className="p-5">
+                          <div className="flex items-center gap-3 mb-4">
+                            <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg text-white shadow-lg shrink-0" style={{ backgroundColor: stat.color }}>
+                              {stat.name.charAt(0)}
+                            </div>
+                            <h2 className="text-lg font-bold text-white truncate w-full" title={stat.name}>{stat.name}</h2>
+                          </div>
+                          <div className="space-y-4">
+                            <StatBox label="ยอดวิวรวม (Total Views)" value={stat.totalViews.toLocaleString()} color="text-white" />
+                            <div className="grid grid-cols-2 gap-2">
+                               <StatBox label="วิวเฉลี่ย/คลิป" value={stat.avgViews.toLocaleString()} color="text-slate-300" />
+                               <StatBox label="จำนวนคลิป" value={stat.count} color="text-slate-300" align="right" />
+                            </div>
+                            <div className="pt-3 border-t border-slate-700/50 flex justify-between items-center">
+                               <span className="text-xs text-slate-500">Engagement Rate</span>
+                               <span className="text-sm font-bold text-green-400">{stat.engagementRate}%</span>
+                            </div>
+                          </div>
+                        </div>
+                     </Card>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                   <Card className="p-6 lg:col-span-2 h-[450px]">
+                     <h3 className="text-lg font-bold text-slate-300 mb-6 flex items-center gap-2">
+                       <BarChart2 size={20} className="text-purple-400" /> 
+                       เปรียบเทียบยอดวิวเฉลี่ย (Average Views)
+                     </h3>
+                     <ResponsiveContainer width="100%" height="85%">
+                       <BarChart data={channelStats} layout="vertical" margin={{ left: 40, right: 40 }}>
+                         <CartesianGrid strokeDasharray="3 3" stroke="#334155" horizontal={false} />
+                         <XAxis type="number" stroke="#94a3b8" hide />
+                         <YAxis dataKey="name" type="category" stroke="#94a3b8" width={100} tick={{fill: '#cbd5e1', fontSize: 12}} />
+                         <Tooltip 
+                            contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#fff' }} 
+                            cursor={{fill: 'rgba(255,255,255,0.05)'}}
+                            itemStyle={{ color: '#fff' }}
+                         />
+                         <Bar dataKey="avgViews" name="Avg Views per Clip" radius={[0, 4, 4, 0]} barSize={30}>
+                            {channelStats.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                         </Bar>
+                       </BarChart>
+                     </ResponsiveContainer>
+                   </Card>
+
+                   <Card className="p-6 h-[450px] flex flex-col relative">
+                      <h3 className="text-lg font-bold text-slate-300 mb-2 w-full text-left flex items-center gap-2">
+                         <Users size={20} className="text-yellow-400" />
+                         สัดส่วนยอดวิวรวม (Market Share)
+                      </h3>
+                      <div className="flex-grow">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={channelStats}
+                              cx="50%"
+                              cy="50%"
+                              innerRadius={60}
+                              outerRadius={100}
+                              paddingAngle={2}
+                              dataKey="totalViews"
+                            >
+                              {channelStats.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.color} stroke="rgba(0,0,0,0)" />
+                              ))}
+                            </Pie>
+                            <Tooltip contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155' }} />
+                            <Legend layout="horizontal" verticalAlign="bottom" align="center" wrapperStyle={{fontSize: '11px', paddingTop: '10px'}}/>
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+                   </Card>
+                </div>
+
+                <Card className="p-0 border-yellow-500/30">
+                   <div className="bg-gradient-to-r from-yellow-900/20 to-slate-900 p-4 border-b border-slate-800 flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                         <Brain className="text-yellow-400" />
+                         <h3 className="text-lg font-bold text-yellow-100">AI Analyst (Gemini) - วิเคราะห์ผล</h3>
+                      </div>
+                      {!aiAnalysis && (
+                        <div className="flex gap-2">
+                           <input 
+                             type="password" 
+                             placeholder="ใส่ Gemini API Key (ถ้ามี)" 
+                             className="bg-slate-950 border border-slate-700 rounded px-3 py-1 text-sm text-slate-300 focus:outline-none focus:border-yellow-500 w-40 md:w-auto"
+                             value={aiKey}
+                             onChange={e => setAiKey(e.target.value)}
+                           />
+                           <button 
+                             onClick={handleAIAnalyze}
+                             disabled={aiLoading}
+                             className="bg-yellow-600 hover:bg-yellow-500 text-white px-4 py-1 rounded text-sm font-bold transition-colors disabled:opacity-50 flex items-center gap-2"
+                           >
+                             {aiLoading ? <RefreshCw className="animate-spin" size={14}/> : 'วิเคราะห์ข้อมูล'}
+                           </button>
+                        </div>
+                      )}
+                   </div>
+                   
+                   <div className="p-6 bg-slate-900/50 min-h-[150px]">
+                      {aiLoading ? (
+                        <div className="space-y-3 animate-pulse">
+                          <div className="h-4 bg-slate-800 rounded w-3/4"></div>
+                          <div className="h-4 bg-slate-800 rounded w-1/2"></div>
+                        </div>
+                      ) : aiAnalysis ? (
+                        <div className="prose prose-invert max-w-none">
+                          <pre className="whitespace-pre-wrap font-sans text-slate-300 text-sm leading-relaxed">
+                            {aiAnalysis}
+                          </pre>
+                          <button onClick={() => setAiAnalysis(null)} className="mt-4 text-xs text-slate-500 underline hover:text-slate-300">
+                            ล้างผลการวิเคราะห์
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center text-slate-500 h-full py-8">
+                           <Brain size={48} className="mb-2 opacity-20" />
+                           <p className="text-sm">ใส่ API Key และกดปุ่มวิเคราะห์ เพื่อให้ AI สรุปข้อมูลเชิงลึกของ {selectedChannels.length} ช่องนี้</p>
+                        </div>
+                      )}
+                   </div>
+                </Card>
+
+              </main>
+            </div>
+          );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<GhostBattleApp />);
+    </script>
+</body>
+</html>
