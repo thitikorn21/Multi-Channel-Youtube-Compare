@@ -9,11 +9,11 @@
     <script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
     
-    <!-- 2. Load Dependencies for Recharts (CRITICAL FIX) -->
+    <!-- 2. Load Dependencies for Recharts -->
     <script src="https://unpkg.com/prop-types/prop-types.min.js"></script>
     <script src="https://unpkg.com/react-is/umd/react-is.production.min.js"></script>
     
-    <!-- 3. Load Recharts (Pinned to v2.8.0 for best UMD stability) -->
+    <!-- 3. Load Recharts -->
     <script src="https://unpkg.com/recharts@2.8.0/umd/Recharts.js"></script>
 
     <!-- 4. Load Babel -->
@@ -22,10 +22,27 @@
     <!-- 5. Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- 6. Load Plotly.js (For 3D ML Visualization) -->
+    <!-- 6. Load Plotly.js -->
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
 
-    <!-- 7. Icon Components -->
+    <!-- 7. Load FontAwesome (For Infographic Icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <!-- 8. Load Html2Canvas & Mermaid -->
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+    <style>
+        body { font-family: 'Kanit', sans-serif; }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    </style>
+
+    <!-- 9. Icon Components (Lucide via SVG) -->
     <script type="text/babel">
         const IconWrapper = ({ children, className, size = 24, color = "currentColor" }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -34,9 +51,6 @@
         );
 
         const Trophy = (props) => <IconWrapper {...props}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></IconWrapper>;
-        const TrendingUp = (props) => <IconWrapper {...props}><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></IconWrapper>;
-        const Users = (props) => <IconWrapper {...props}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></IconWrapper>;
-        const Youtube = (props) => <IconWrapper {...props}><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/></IconWrapper>;
         const Activity = (props) => <IconWrapper {...props}><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></IconWrapper>;
         const Swords = (props) => <IconWrapper {...props}><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" x2="19" y1="19" y2="13"/><line x1="16" x2="20" y1="16" y2="20"/><line x1="19" x2="21" y1="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" x2="9" y1="14" y2="18"/><line x1="7" x2="4" y1="17" y2="20"/><line x1="3" x2="5" y1="19" y2="21"/></IconWrapper>;
         const Brain = (props) => <IconWrapper {...props}><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/></IconWrapper>;
@@ -50,9 +64,7 @@
         const Type = (props) => <IconWrapper {...props}><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" x2="15" y1="20" y2="20"/><line x1="12" x2="12" y1="4" y2="20"/></IconWrapper>;
         const Box = (props) => <IconWrapper {...props}><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" x2="12" y1="22.08" y2="12"/></IconWrapper>;
         const Info = (props) => <IconWrapper {...props}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></IconWrapper>;
-        const Settings = (props) => <IconWrapper {...props}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.74v-.47a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.35a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></IconWrapper>;
-        const Database = (props) => <IconWrapper {...props}><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></IconWrapper>;
-        const Webhook = (props) => <IconWrapper {...props}><path d="M18 8a3 3 0 0 0-3.78-2.9"/><path d="M12 2a3 3 0 0 0-2.9 3.78"/><path d="M6 8a3 3 0 0 0 2.9-3.78"/><path d="M2 12h.01"/><path d="M22 12h.01"/><path d="M12 22h.01"/><path d="M8 18h8"/><path d="M12 12v6"/></IconWrapper>;
+        const Users = (props) => <IconWrapper {...props}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></IconWrapper>;
     </script>
 </head>
 <body class="bg-slate-950 text-slate-200">
@@ -68,12 +80,9 @@
         ];
 
         // --- Utility: Helper Functions ---
-        // 🔥 UPDATE: รองรับทั้ง ISO8601 และ H:MM:SS / MM:SS
         const parseDuration = (isoDuration) => {
             if (!isoDuration) return 0;
             const durationStr = isoDuration.toString().trim();
-
-            // Case 1: ISO 8601 (PT1H2M3S) - Standard YouTube API
             if (durationStr.startsWith('PT')) {
                 const match = durationStr.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
                 if (!match) return 0;
@@ -82,31 +91,19 @@
                 const seconds = (parseInt(match[3]) || 0);
                 return (hours * 60) + minutes + (seconds / 60);
             }
-
-            // Case 2: Timestamp format (e.g., "0:16:47" or "16:47") - From Google Sheet Export
             if (durationStr.includes(':')) {
                 const parts = durationStr.split(':').map(Number);
                 let h = 0, m = 0, s = 0;
-                
-                if (parts.length === 3) {
-                    // H:MM:SS
-                    [h, m, s] = parts;
-                } else if (parts.length === 2) {
-                    // MM:SS
-                    [m, s] = parts;
-                }
-                
-                // คำนวณรวมเป็นนาที
+                if (parts.length === 3) { [h, m, s] = parts; } 
+                else if (parts.length === 2) { [m, s] = parts; }
                 return (h * 60) + m + (s / 60);
             }
-
             return 0;
         };
 
         const parseCSV = (text) => {
           const lines = text.split('\n').filter(line => line.trim() !== '');
           const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-          
           return lines.slice(1).map(line => {
             const values = [];
             let currentVal = '';
@@ -117,7 +114,6 @@
               else { currentVal += line[i]; }
             }
             values.push(currentVal);
-
             const row = {};
             headers.forEach((header, index) => {
               row[header] = values[index]?.trim().replace(/"/g, '');
@@ -126,7 +122,7 @@
           });
         };
 
-        // --- AI Analysis Logic (Hybrid: Real API + Smart Simulation) ---
+        // --- AI Analysis Logic ---
         const analyzeData = async (channels, bestTime, bestDuration, topKeywords, apiKey) => {
             const winner = channels.reduce((prev, current) => (prev.totalViews > current.totalViews) ? prev : current);
             const daysFull = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
@@ -212,80 +208,177 @@ Tone: Professional, Data-driven, Action-oriented (No fluff).
             return `บทวิเคราะห์เชิงกลยุทธ์ (Smart Simulation - General Content):\n\n1. **Content Structure & Retention (มุมมอง Producer):**\n   ${producerInsight}\n   - ความยาว **"${realDuration}"** เป็นระยะที่ Algorithm แนะนำสำหรับ Long-form content แนะนำให้แบ่งเนื้อหาเป็นบท (Chapters) เพื่อให้คนดูเลือกดูจุดที่สนใจได้ง่ายขึ้น\n\n2. **Audience Behavior Insight (มุมมองนักการตลาด):**\n   ${marketerInsight}\n\n3. **Optimization Strategy (CTR & Thumbnail):**\n   - **Visual Strategy:** ใช้หลักการ **"Less is More"** บนปกคลิป \n     1. **Subject:** ใช้ภาพคนหรือวัตถุหลักให้ใหญ่ชัดเจน (กินพื้นที่ 60% ของภาพ) \n     2. **Text:** ใส่ข้อความแค่ 3-4 คำที่อ่านแล้ว "สะดุด" (ไม่ใช่ชื่อคลิปซ้ำ) \n     3. **Contrast:** ใช้สีพื้นหลังที่ตัดกับวัตถุหลักอย่างชัดเจน (เช่น พื้นน้ำเงิน-ตัวหนังสือเหลือง) เพื่อให้เด่นใน Dark Mode\n   - **Title Formula:** ใช้สูตร [Keyword หลัก] + [ผลลัพธ์ที่คนดูอยากได้] + [ความอยากรู้อยากเห็น/ตัวเลข]\n   - **ตัวอย่างชื่อคลิป:** ${sampleTitle}\n   - **Keyword Winning:** คำว่า ${keywordsText} เป็นคำที่มี Traffic ดี ควรนำไปตั้งชื่อ Playlist เพื่อดึงยอดวิวระยะยาว (Evergreen Content)`;
         };
 
-        // --- System Info Modal Component ---
+        // --- UPDATED: System Info Modal (Mermaid + Html2Canvas) ---
         const SystemInfoModal = ({ isOpen, onClose }) => {
+            const captureRef = useRef(null);
+            const [downloadState, setDownloadState] = useState('idle'); // idle, loading, success, error
+
+            useEffect(() => {
+                if (isOpen && window.mermaid) {
+                    // Initialize Mermaid when modal opens
+                    window.mermaid.initialize({
+                        startOnLoad: true,
+                        theme: 'dark',
+                        securityLevel: 'loose',
+                        fontFamily: 'Kanit'
+                    });
+                    // Force render
+                    window.mermaid.init(undefined, document.querySelectorAll('.mermaid'));
+                }
+            }, [isOpen]);
+
+            const handleDownload = () => {
+                if (!captureRef.current) return;
+                setDownloadState('loading');
+                
+                html2canvas(captureRef.current, {
+                    backgroundColor: "#1e293b", // Slate-800 match
+                    scale: 2,
+                    useCORS: true,
+                    // 🔥 FIX: แก้ปัญหา Gradient Text กลายเป็นแถบสีม่วงตอนดาวน์โหลด
+                    onclone: (clonedDoc) => {
+                        const titleElement = clonedDoc.getElementById('capture-area').querySelector('h1');
+                        if (titleElement) {
+                            // ลบ Class ที่ทำ Gradient ออกชั่วคราวในไฟล์ภาพ
+                            titleElement.classList.remove('text-transparent', 'bg-clip-text', 'bg-gradient-to-r');
+                            // ตั้งค่าสีตัวหนังสือให้เป็นสีทึบแทน (สีฟ้า Indigo)
+                            titleElement.style.color = '#818cf8'; 
+                            titleElement.style.backgroundImage = 'none';
+                            titleElement.style.webkitTextFillColor = 'initial';
+                        }
+                    }
+                }).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = 'system-architecture-infographic.png';
+                    link.href = canvas.toDataURL("image/png");
+                    link.click();
+                    setDownloadState('success');
+                    setTimeout(() => setDownloadState('idle'), 2000);
+                }).catch(err => {
+                    console.error("Screenshot failed", err);
+                    setDownloadState('error');
+                });
+            };
+
             if (!isOpen) return null;
+
             return (
-                <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-slate-900 border border-slate-700 rounded-xl max-w-2xl w-full p-6 shadow-2xl relative overflow-hidden">
-                        {/* Header */}
-                        <div className="flex justify-between items-center mb-6 border-b border-slate-800 pb-4">
-                            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                                <Info className="text-blue-400" /> System Architecture
-                            </h2>
-                            <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
-                                <X size={24} />
+                <div className="fixed inset-0 bg-black/90 z-[60] flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="relative w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-3xl bg-slate-900 border border-slate-700 shadow-2xl">
+                        
+                        {/* Close Button */}
+                        <button onClick={onClose} className="absolute top-4 right-4 z-50 text-slate-400 hover:text-white bg-slate-800/50 hover:bg-slate-700 p-2 rounded-full transition-all">
+                            <X size={24} />
+                        </button>
+
+                        {/* Capture Area */}
+                        <div ref={captureRef} id="capture-area" className="p-8 md:p-12 relative bg-slate-800 overflow-hidden">
+                            {/* Background Decor */}
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+                            <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl -ml-16 -mb-16 pointer-events-none"></div>
+
+                            <div className="text-center mb-8 relative z-10">
+                                <h1 className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 mb-2 font-['Kanit']">
+                                    CHANNEL ANALYTICS BATTLE
+                                </h1>
+                                <p className="text-slate-400 text-lg font-['Kanit']">System Architecture & Data Pipeline Flow</p>
+                            </div>
+
+                            {/* Mermaid Diagram */}
+                            <div className="mermaid flex justify-center relative z-10 my-8">
+{`graph LR
+    subgraph Data_Collection ["1. Data Collection (Automation)"]
+    direction TB
+    YT[<i class="fab fa-youtube"></i> YouTube Data API v3]
+    N8N[<i class="fas fa-bolt"></i> n8n Workflow]
+    YT -->|Fetch Stats| N8N
+    N8N -->|Process Data| N8N_Logic{Logic Split}
+    end
+
+    subgraph Database ["2. Data Storage (Google Sheets)"]
+    direction TB
+    GS[<i class="fas fa-table"></i> Google Sheets]
+    DIM[(dim_videos_update<br/>Store Metadata)]
+    FACT[(fact_video_stats<br/>Store History)]
+
+    N8N_Logic -->|Update/Upsert| DIM
+    N8N_Logic -->|Append New Row| FACT
+    DIM -.-> GS
+    FACT -.-> GS
+    end
+
+    subgraph Visualization ["3. Frontend & AI (Web App)"]
+    direction TB
+    WEB[<i class="fas fa-laptop-code"></i> React Web App]
+    DASH[Dashboard & Charts]
+    AI[<i class="fas fa-brain"></i> Gemini AI Analysis]
+
+    GS -->|Export CSV| WEB
+    WEB --> DASH
+    WEB -->|Context Data| AI
+    AI -->|Insights| DASH
+    end
+
+    classDef youtube fill:#FF0000,stroke:#333,stroke-width:2px,color:white;
+    classDef n8n fill:#FF6D5A,stroke:#333,stroke-width:2px,color:white;
+    classDef sheets fill:#0F9D58,stroke:#333,stroke-width:2px,color:white;
+    classDef web fill:#61DAFB,stroke:#333,stroke-width:2px,color:black;
+    classDef ai fill:#8E75B2,stroke:#333,stroke-width:2px,color:white;
+
+    class YT youtube;
+    class N8N n8n;
+    class GS,DIM,FACT sheets;
+    class WEB web;
+    class AI ai;`}
+                            </div>
+
+                            {/* Info Grid */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 text-center relative z-10 font-['Kanit']">
+                                <div className="p-4 bg-slate-700/50 rounded-xl border border-slate-600">
+                                    <div className="text-orange-400 font-bold text-xl mb-2"><i className="fas fa-robot mr-2"></i>1. n8n Automation</div>
+                                    <p className="text-sm text-slate-300">ดึงข้อมูลสถิติช่อง (Views, Likes, Comments) จาก YouTube API ตาม Channel ID ที่กำหนดไว้</p>
+                                </div>
+                                <div className="p-4 bg-slate-700/50 rounded-xl border border-slate-600">
+                                    <div className="text-green-400 font-bold text-xl mb-2"><i className="fas fa-database mr-2"></i>2. Google Sheets</div>
+                                    <p className="text-sm text-slate-300">แยกเก็บข้อมูลเป็น 2 ตาราง: Dimension (ข้อมูลล่าสุด) และ Fact (ประวัติย้อนหลัง) เพื่อการวิเคราะห์ที่แม่นยำ</p>
+                                </div>
+                                <div className="p-4 bg-slate-700/50 rounded-xl border border-slate-600">
+                                    <div className="text-blue-400 font-bold text-xl mb-2"><i className="fas fa-chart-line mr-2"></i>3. React + Gemini AI</div>
+                                    <p className="text-sm text-slate-300">แสดงผลกราฟด้วย Recharts/Plotly และใช้ Gemini AI วิเคราะห์กลยุทธ์จากข้อมูลจริง</p>
+                                </div>
+                            </div>
+                            
+                            <div className="text-center mt-8 relative z-10">
+                                <p className="text-slate-500 text-xs mb-1">Generated for Channel Analytics Battle Project</p>
+                                <p className="text-slate-400 text-sm font-bold font-['Kanit']">
+                                    by Thitikorn Sapanguen(SDA), Natpaphon Nukhunthod(DS)
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Footer Controls */}
+                        <div className="p-4 bg-slate-900 border-t border-slate-800 flex justify-end items-center gap-4 sticky bottom-0 z-20">
+                             <button 
+                                onClick={handleDownload} 
+                                disabled={downloadState === 'loading'}
+                                className={`px-6 py-2 rounded-full font-bold shadow-lg flex items-center gap-2 transition-all ${
+                                    downloadState === 'success' ? 'bg-green-600 text-white hover:bg-green-500' :
+                                    downloadState === 'error' ? 'bg-red-600 text-white' :
+                                    'bg-blue-600 hover:bg-blue-500 text-white hover:scale-105'
+                                }`}
+                            >
+                                {downloadState === 'loading' && <i className="fas fa-spinner fa-spin"></i>}
+                                {downloadState === 'success' && <i className="fas fa-check"></i>}
+                                {downloadState === 'error' && <i className="fas fa-exclamation-triangle"></i>}
+                                {downloadState === 'idle' && <i className="fas fa-camera"></i>}
+                                
+                                {downloadState === 'loading' ? 'Generating...' : 
+                                 downloadState === 'success' ? 'Downloaded!' : 
+                                 downloadState === 'error' ? 'Failed' : 
+                                 'Download Image (PNG)'}
                             </button>
-                        </div>
-
-                        {/* Content */}
-                        <div className="space-y-6 text-slate-300">
-                            {/* Step 1: n8n */}
-                            <div className="flex gap-4">
-                                <div className="mt-1">
-                                    <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-500/50">
-                                        <Webhook className="text-orange-500" size={20} />
-                                    </div>
-                                    <div className="w-0.5 h-full bg-slate-800 mx-auto mt-2"></div>
-                                </div>
-                                <div>
-                                    <h3 className="text-lg font-bold text-orange-400">1. Data Ingestion (n8n Workflow)</h3>
-                                    <p className="text-sm mt-1 text-slate-400">
-                                        ระบบใช้ <strong>n8n</strong> เป็นตัวกลางในการดึงข้อมูลสถิติจาก <strong>YouTube Data API v3</strong> โดยใช้ Channel ID เป็นตัวระบุเป้าหมาย ทำงานแบบอัตโนมัติ (Schedule Trigger)
-                                    </p>
-                                </div>
-                            </div>
-
-                            {/* Step 2: Google Sheets */}
-                            <div className="flex gap-4">
-                                <div className="mt-1">
-                                    <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center border border-green-500/50">
-                                        <Database className="text-green-500" size={20} />
-                                    </div>
-                                    <div className="w-0.5 h-full bg-slate-800 mx-auto mt-2"></div>
-                                </div>
-                                <div>
-                                    <h3 className="text-lg font-bold text-green-400">2. Data Storage (Google Sheets)</h3>
-                                    <p className="text-sm mt-1 text-slate-400">
-                                        ข้อมูลดิบถูกจัดเก็บแยกเป็น 2 ส่วนสำคัญ:
-                                    </p>
-                                    <ul className="list-disc list-inside text-xs mt-2 space-y-1 ml-2 text-slate-500">
-                                        <li><strong className="text-slate-300">dim_videos_update:</strong> ตารางมิติเก็บข้อมูลล่าสุดของแต่ละคลิป (ชื่อ, ปก, ความยาว) ใช้สำหรับแสดงผลปัจจุบัน</li>
-                                        <li><strong className="text-slate-300">fact_video_stats:</strong> ตาราง Fact เก็บประวัติยอดวิวตามเวลา (Time Series) เพื่อวิเคราะห์แนวโน้ม</li>
-                                    </ul>
-                                </div>
-                            </div>
-
-                            {/* Step 3: Web App */}
-                            <div className="flex gap-4">
-                                <div className="mt-1">
-                                    <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/50">
-                                        <Activity className="text-blue-500" size={20} />
-                                    </div>
-                                </div>
-                                <div>
-                                    <h3 className="text-lg font-bold text-blue-400">3. Analytics & Visualization (Web App)</h3>
-                                    <p className="text-sm mt-1 text-slate-400">
-                                        Web Application นี้ดึงข้อมูล CSV จาก Google Sheets มาประมวลผลฝั่ง Client-side (React) เพื่อสร้าง Dashboard, Heatmap และกราฟ 3D พร้อมระบบ AI Analyst
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Footer */}
-                        <div className="mt-8 pt-4 border-t border-slate-800 flex justify-end">
-                            <button onClick={onClose} className="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors">
-                                ปิดหน้าต่าง
+                            <button onClick={onClose} className="text-slate-400 hover:text-white px-4 py-2 font-['Kanit']">
+                                ปิด
                             </button>
                         </div>
                     </div>
@@ -324,7 +417,7 @@ Tone: Professional, Data-driven, Action-oriented (No fluff).
             );
         };
 
-        // --- 3D Chart Component (Plotly) ---
+        // --- 3D Chart Component ---
         const GhostDataverse = ({ data, selectedChannels, colors }) => {
             const chartRef = useRef(null);
 
@@ -370,6 +463,9 @@ Tone: Professional, Data-driven, Action-oriented (No fluff).
                     x: [0, 0, maxDuration, maxDuration, 0, 0, maxDuration, maxDuration],
                     y: [0, midEng, midEng, 0, 0, midEng, midEng, 0],
                     z: [midViews, midViews, midViews, midViews, maxViews, maxViews, maxViews, maxViews],
+                    i: [7, 0, 0, 0, 4, 4, 6, 6, 4, 0, 3, 2],
+                    j: [3, 4, 1, 2, 5, 6, 5, 2, 0, 1, 6, 3],
+                    k: [0, 7, 2, 3, 6, 7, 1, 1, 5, 5, 7, 6],
                     color: '#ef4444', opacity: opacityVal, alphahull: 0, name: 'Clickbait Zone', showlegend: true, hoverinfo: 'name'
                 };
 
@@ -378,6 +474,9 @@ Tone: Professional, Data-driven, Action-oriented (No fluff).
                     x: [0, 0, maxDuration, maxDuration, 0, 0, maxDuration, maxDuration],
                     y: [midEng, maxEngagement, maxEngagement, midEng, midEng, maxEngagement, maxEngagement, midEng],
                     z: [0, 0, 0, 0, midViews, midViews, midViews, midViews],
+                    i: [7, 0, 0, 0, 4, 4, 6, 6, 4, 0, 3, 2],
+                    j: [3, 4, 1, 2, 5, 6, 5, 2, 0, 1, 6, 3],
+                    k: [0, 7, 2, 3, 6, 7, 1, 1, 5, 5, 7, 6],
                     color: '#3b82f6', opacity: opacityVal, alphahull: 0, name: 'Fanbase Zone', showlegend: true, hoverinfo: 'name'
                 };
 
@@ -388,10 +487,7 @@ Tone: Professional, Data-driven, Action-oriented (No fluff).
                     
                     const xValues = chData.map(d => d.duration); 
                     const zValues = chData.map(d => d.views);    
-                    const yValues = chData.map(d => {             
-                        if(d.views === 0) return 0;
-                        return ((d.likes + d.comments) / d.views) * 100;
-                    });
+                    const yValues = chData.map(d => d.views > 0 ? ((d.likes + d.comments) / d.views) * 100 : 0);
                     const markerSizes = chData.map(d => Math.max(5, Math.min(30, Math.sqrt(d.comments) * 2))); 
 
                     return {
@@ -418,6 +514,7 @@ Tone: Professional, Data-driven, Action-oriented (No fluff).
 
                 const config = { responsive: true, displayModeBar: true };
                 window.Plotly.newPlot(chartRef.current, allTraces, layout, config);
+                
                 return () => { if (chartRef.current) window.Plotly.purge(chartRef.current); };
             }, [data, selectedChannels, colors]);
 
@@ -432,8 +529,7 @@ Tone: Professional, Data-driven, Action-oriented (No fluff).
             return (
                 <div className="p-6 bg-slate-900/50 border-t border-slate-700/50">
                     <h4 className="text-white font-bold mb-4 flex items-center gap-2">
-                        <Info size={18} className="text-blue-400" />
-                        Key Takeaways: สรุปประเด็นสำคัญจากข้อมูล
+                        <Info size={18} className="text-blue-400" /> Key Takeaways: สรุปประเด็นสำคัญจากข้อมูล
                     </h4>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -460,8 +556,6 @@ Tone: Professional, Data-driven, Action-oriented (No fluff).
         function GhostChannelBattleApp() {
           const [data, setData] = useState([]);
           const [loading, setLoading] = useState(true);
-          const [error, setError] = useState(null);
-          
           const [selectedChannels, setSelectedChannels] = useState([]);
           const [tempSelected, setTempSelected] = useState('');
           
@@ -499,7 +593,6 @@ Tone: Professional, Data-driven, Action-oriented (No fluff).
                 }
               } catch (err) {
                 console.error("Error fetching data:", err);
-                setError("ไม่สามารถดึงข้อมูลจาก Google Sheet ได้");
                 setLoading(false);
               }
             };
@@ -581,28 +674,21 @@ Tone: Professional, Data-driven, Action-oriented (No fluff).
 
           const channelList = useMemo(() => [...new Set(data.map(d => d.channel_title))].filter(Boolean), [data]);
           const addChannel = () => { if (tempSelected && !selectedChannels.includes(tempSelected)) setSelectedChannels([...selectedChannels, tempSelected]); };
-          const removeChannel = (channel) => { if (selectedChannels.length > 1) setSelectedChannels(selectedChannels.filter(c => c !== channel)); else alert("ต้องเหลืออย่างน้อย 1 ช่องเพื่อแสดงผลครับ"); };
+          const removeChannel = (channel) => { if (selectedChannels.length > 1) setSelectedChannels(selectedChannels.filter(c => c !== channel)); else alert("ต้องเหลืออย่างน้อย 1 ช่องครับ"); };
           
           const handleAIAnalyze = async () => { 
               setAiLoading(true); 
-              // PASS REAL DATA TO ANALYZE FUNCTION
               const result = await analyzeData(channelStats, heatmapData.best, durationStats, keywordStats, aiKey); 
               setAiAnalysis(result); 
               setAiLoading(false); 
           };
 
-          if (loading) return (
-            <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white">
-              <div className="flex flex-col items-center animate-pulse">
-                <p className="text-xl">กำลังโหลดข้อมูล...</p>
-              </div>
-            </div>
-          );
+          if (loading) return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white animate-pulse">กำลังโหลดข้อมูล...</div>;
 
           const days = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
 
           return (
-            <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-red-500/30 pb-20">
+            <div className="min-h-screen bg-slate-950 text-slate-200 font-sans pb-20">
               <SystemInfoModal isOpen={isInfoModalOpen} onClose={() => setIsInfoModalOpen(false)} />
               
               <div className="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 shadow-lg">
@@ -614,12 +700,11 @@ Tone: Professional, Data-driven, Action-oriented (No fluff).
                       </div>
                       <div>
                         <h1 className="text-xl font-bold text-white tracking-tight uppercase">Channel Analytics Battle</h1>
-                        <p className="text-xs text-slate-400">ระบบเปรียบเทียบสถิติ Youtube แบบหลายช่อง (Generic Content)</p>
+                        <p className="text-xs text-slate-400">ระบบเปรียบเทียบสถิติ Youtube</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                       {/* System Info Button */}
-                       <button onClick={() => setIsInfoModalOpen(true)} className="bg-slate-800 hover:bg-slate-700 text-slate-300 p-2 rounded-lg border border-slate-700 transition-colors mr-2" title="System Info">
+                       <button onClick={() => setIsInfoModalOpen(true)} className="bg-slate-800 hover:bg-slate-700 text-slate-300 p-2 rounded-lg border border-slate-700 transition-colors mr-2" title="System Architecture">
                            <Info size={20} />
                        </button>
                        <div className="flex items-center gap-2 bg-slate-800 p-1.5 rounded-lg border border-slate-700 shadow-inner">
@@ -649,7 +734,7 @@ Tone: Professional, Data-driven, Action-oriented (No fluff).
                 {/* Stats Cards */}
                 <div className={`grid grid-cols-1 md:grid-cols-2 ${selectedChannels.length >= 3 ? 'lg:grid-cols-3 xl:grid-cols-4' : ''} gap-6`}>
                   {channelStats.map((stat, idx) => (
-                     <Card key={stat.name} className="relative border-t-4 transition-transform hover:-translate-y-1" style={{ borderTopColor: stat.color }}>
+                      <Card key={stat.name} className="relative border-t-4 transition-transform hover:-translate-y-1" style={{ borderTopColor: stat.color }}>
                         {idx === 0 && channelStats.length > 1 && (
                            <div className="absolute top-0 right-0 p-2 bg-yellow-500/20 text-yellow-400 rounded-bl-xl border-l border-b border-yellow-500/20 z-10"><Trophy size={16} /></div>
                         )}
@@ -670,7 +755,7 @@ Tone: Professional, Data-driven, Action-oriented (No fluff).
                             </div>
                           </div>
                         </div>
-                     </Card>
+                      </Card>
                   ))}
                 </div>
 
@@ -678,8 +763,7 @@ Tone: Professional, Data-driven, Action-oriented (No fluff).
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                    <Card className="p-6 lg:col-span-2 h-[450px]">
                      <h3 className="text-lg font-bold text-slate-300 mb-6 flex items-center gap-2">
-                       <BarChart2 size={20} className="text-purple-400" /> 
-                       เปรียบเทียบยอดวิวเฉลี่ย (Average Views)
+                       <BarChart2 size={20} className="text-purple-400" /> เปรียบเทียบยอดวิวเฉลี่ย
                      </h3>
                      <ResponsiveContainer width="100%" height="85%">
                        <BarChart data={channelStats} layout="vertical" margin={{ left: 40, right: 40 }}>
@@ -688,9 +772,7 @@ Tone: Professional, Data-driven, Action-oriented (No fluff).
                          <YAxis dataKey="name" type="category" stroke="#94a3b8" width={100} tick={{fill: '#cbd5e1', fontSize: 12}} />
                          <Tooltip contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#fff' }} cursor={{fill: 'rgba(255,255,255,0.05)'}} itemStyle={{ color: '#fff' }} />
                          <Bar dataKey="avgViews" name="Avg Views per Clip" radius={[0, 4, 4, 0]} barSize={30}>
-                            {channelStats.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
+                            {channelStats.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
                          </Bar>
                        </BarChart>
                      </ResponsiveContainer>
@@ -698,16 +780,13 @@ Tone: Professional, Data-driven, Action-oriented (No fluff).
 
                    <Card className="p-6 h-[450px] flex flex-col relative">
                       <h3 className="text-lg font-bold text-slate-300 mb-2 w-full text-left flex items-center gap-2">
-                         <Users size={20} className="text-yellow-400" />
-                         สัดส่วนยอดวิวรวม (Market Share)
+                          <Users size={20} className="text-yellow-400" /> Market Share
                       </h3>
                       <div className="flex-grow">
                         <ResponsiveContainer width="100%" height="100%">
                           <PieChart>
                             <Pie data={channelStats} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={2} dataKey="totalViews">
-                              {channelStats.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={entry.color} stroke="rgba(0,0,0,0)" />
-                              ))}
+                              {channelStats.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} stroke="rgba(0,0,0,0)" />)}
                             </Pie>
                             <Tooltip contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155' }} />
                             <Legend layout="horizontal" verticalAlign="bottom" align="center" wrapperStyle={{fontSize: '11px', paddingTop: '10px'}}/>
@@ -738,7 +817,7 @@ Tone: Professional, Data-driven, Action-oriented (No fluff).
                     </div>
                 </Card>
 
-                {/* 🚀 STRATEGY ROOM (QUICK WINS) */}
+                {/* Strategy Room */}
                 <div className="space-y-4">
                     <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 flex items-center gap-2">
                         <Zap className="text-yellow-400" /> Strategy Room: กลยุทธ์ Quick Win
@@ -779,16 +858,12 @@ Tone: Professional, Data-driven, Action-oriented (No fluff).
                     </div>
                 </div>
 
-                {/* 3D Dataverse Section */}
+                {/* 3D Dataverse */}
                 <Card className="p-0 border-blue-500/30 mt-8 overflow-hidden relative">
                     <div className="absolute top-0 left-0 w-full h-full bg-slate-900 z-0"></div>
                     <div className="relative z-10 p-4 border-b border-slate-700/50 bg-slate-800/80 backdrop-blur-sm flex justify-between items-center">
                         <div>
-                            <h3 className="text-lg font-bold text-blue-300 flex items-center gap-2">
-                                <Box size={20} className="text-blue-400" />
-                                Content Impact Matrix (3D)
-                            </h3>
-                            <p className="text-xs text-slate-400">แบบจำลอง 4 มิติ: ความยาว (X) vs Engagement Rate (Y) vs ยอดวิว (Z) vs คอมเมนต์ (ขนาด)</p>
+                            <h3 className="text-lg font-bold text-blue-300 flex items-center gap-2"><Box size={20} className="text-blue-400" /> Content Impact Matrix (3D)</h3>
                         </div>
                     </div>
                     <div className="relative z-10 bg-slate-900/50 min-h-[500px]">
@@ -797,17 +872,17 @@ Tone: Professional, Data-driven, Action-oriented (No fluff).
                     <div className="relative z-10"><KeyTakeaways heatmapData={heatmapData} durationStats={durationStats} days={days} /></div>
                 </Card>
 
-                {/* AI Analyst Section */}
+                {/* AI Analyst */}
                 <Card className="p-0 border-yellow-500/30 mt-8">
                    <div className="bg-gradient-to-r from-yellow-900/20 to-slate-900 p-4 border-b border-slate-800 flex justify-between items-center">
                       <div className="flex items-center gap-2">
-                         <Brain className="text-yellow-400" />
-                         <h3 className="text-lg font-bold text-yellow-100">AI Analyst (Gemini) - วิเคราะห์ผล</h3>
+                          <Brain className="text-yellow-400" />
+                          <h3 className="text-lg font-bold text-yellow-100">AI Analyst (Gemini)</h3>
                       </div>
                       {!aiAnalysis && (
                         <div className="flex gap-2">
-                           <input type="password" placeholder="ใส่ Gemini API Key (ถ้ามี)" className="bg-slate-950 border border-slate-700 rounded px-3 py-1 text-sm text-slate-300 focus:outline-none focus:border-yellow-500 w-40 md:w-auto" value={aiKey} onChange={e => setAiKey(e.target.value)} />
-                           <button onClick={handleAIAnalyze} disabled={aiLoading} className="bg-yellow-600 hover:bg-yellow-500 text-white px-4 py-1 rounded text-sm font-bold transition-colors disabled:opacity-50 flex items-center gap-2">{aiLoading ? <RefreshCw className="animate-spin" size={14}/> : 'วิเคราะห์ข้อมูล'}</button>
+                           <input type="password" placeholder="ใส่ Gemini API Key" className="bg-slate-950 border border-slate-700 rounded px-3 py-1 text-sm text-slate-300 focus:outline-none focus:border-yellow-500 w-40 md:w-auto" value={aiKey} onChange={e => setAiKey(e.target.value)} />
+                           <button onClick={handleAIAnalyze} disabled={aiLoading} className="bg-yellow-600 hover:bg-yellow-500 text-white px-4 py-1 rounded text-sm font-bold transition-colors disabled:opacity-50 flex items-center gap-2">{aiLoading ? <RefreshCw className="animate-spin" size={14}/> : 'วิเคราะห์'}</button>
                         </div>
                       )}
                    </div>
@@ -817,7 +892,7 @@ Tone: Professional, Data-driven, Action-oriented (No fluff).
                       ) : aiAnalysis ? (
                         <div className="prose prose-invert max-w-none"><pre className="whitespace-pre-wrap font-sans text-slate-300 text-sm leading-relaxed">{aiAnalysis}</pre><button onClick={() => setAiAnalysis(null)} className="mt-4 text-xs text-slate-500 underline hover:text-slate-300">ล้างผลการวิเคราะห์</button></div>
                       ) : (
-                        <div className="flex flex-col items-center justify-center text-slate-500 h-full py-8"><Brain size={48} className="mb-2 opacity-20" /><p className="text-sm">ใส่ API Key และกดปุ่มวิเคราะห์ เพื่อให้ AI สรุปข้อมูลเชิงลึกของ {selectedChannels.length} ช่องนี้</p></div>
+                        <div className="flex flex-col items-center justify-center text-slate-500 h-full py-8"><Brain size={48} className="mb-2 opacity-20" /><p className="text-sm">ใส่ API Key เพื่อให้ AI ช่วยวิเคราะห์</p></div>
                       )}
                    </div>
                 </Card>
